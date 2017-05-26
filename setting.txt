@@ -1,0 +1,6 @@
+workpath	/lustre/scratch/users/elin.axelsson/alignATAC/run_pipeline
+bampath	/lustre/scratch/users/elin.axelsson/demult
+index	/lustre/scratch/projects/berger_common/TAIR10/Bowtie2Index/Arabidopsis_thaliana.TAIR10.31.dna_rm.genome
+alignpath /lustre/scratch/users/elin.axelsson/alignATAC/bam
+outname	out_cut1V2
+Q_threshold	10
