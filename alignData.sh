@@ -5,7 +5,7 @@
 #PBS -q workq
 #PBS -l walltime=40:00:00
 #PBS -l select=1:ncpus=6:mem=20gb
-#PBS -J 1-4
+#PBS -J 1-2:3
 
 
 # === begin ENVIRONMENT SETUP ===
@@ -19,16 +19,14 @@ module load MACS/2.1.0.20150420.1-goolf-1.4.10-Python-2.7.5
 # === end ENVIRONMENT SETUP ===
 
 PARAM_IDX=$PBS_ARRAY_INDEX
-PARAM_FILE=$PBS_O_WORKDIR/files.tab
+PARAM_FILE=$PBS_O_WORKDIR/files2.tab
 settingsfile=$PBS_O_WORKDIR/setting.txt
 
 NAME=$(sed "${PARAM_IDX}q;d" $PARAM_FILE | awk '{print $1}')
-#ALIGN=$(sed "${PARAM_IDX}q;d" $PARAM_FILE | awk '{print $2}')
 workpath=$(grep workpath $settingsfile | awk '{print $2}')
 bampath=$(grep bampath $settingsfile | awk '{print $2}')
 index=$(grep index $settingsfile | awk '{print $2}')
 alignpath=$(grep alignpath $settingsfile | awk '{print $2}')
-#subn=$(grep subn $settingsfile | awk '{print $2}')
 l_trim=$(sed "${PARAM_IDX}q;d" $PARAM_FILE | awk '{print $6}')
 echo "NAME: $NAME"
 echo "workpath: $workpath"
@@ -38,7 +36,7 @@ echo "l_trim: $l_trim"
 # === START ===
 
 
-# #if aligned already skip this step
+
 export TMPDIR=$PBS_O_WORKDIR/${NAME}_tmp
 # make sure the directory exists
 mkdir -p $TMPDIR
@@ -46,13 +44,18 @@ echo $TMPDIR
 
 input=${bampath}/${NAME}.bam
 output1=${workpath}/${NAME}_R1_.fastq
+
+#trim to same length if different sequencing lengths 
 if [ ! -f ${output1} ];then
     echo "fastq"
-  samtools view -f 0x40 -b ${input} | samtools bam2fq - | fastx_trimmer -l $l_trim -Q33 -o ${output1}
+# fastx_trimmer [-l N]       = Last base to keep. Default is entire read.
+    samtools view -f 0x40 -b ${input} | samtools bam2fq - | fastx_trimmer -l $l_trim -Q33 -o ${output1}
 fi
-  output2=${workpath}/${NAME}_R2_.fastq
+
+output2=${workpath}/${NAME}_R2_.fastq
 if [ ! -f ${output2} ];then
-    samtools view -f 0x80 -b ${input} | samtools bam2fq -| fastx_trimmer -l $l_trim -Q33 -o ${output2}
+# fastx_trimmer [-l N]       = Last base to keep. Default is entire read.
+   samtools view -f 0x80 -b ${input} | samtools bam2fq -| fastx_trimmer -l $l_trim -Q33 -o ${output2}
 fi
 
 
@@ -68,7 +71,7 @@ output22=${workpath}/${NAME}_R2_cut3.fastq
 
 
 if [ ! -f ${output1} ] || [ ! -f  ${output2} ];then
-    echo "cutadapt"
+   echo "cutadapt"
     cutadapt --minimum-length 5 --overlap 1 -a CTGTCTCTTATACACATCTCCGAGCCCACGAGAC -A CTGTCTCTTATACACATCTGACGCTGCCGACGA -o ${output1} -p ${output2} ${input1} ${input2}
 cutadapt --minimum-length 5 --overlap 3 -a CTGTCTCTTATACACATCTCCGAGCCCACGAGAC -A CTGTCTCTTATACACATCTGACGCTGCCGACGA -o ${output11} -p ${output22} ${input1} ${input2}
 fi
@@ -83,20 +86,20 @@ output2=${workpath}/${NAME}.aligned_cut3.sam
 
 if [ ! -f ${output} ];then
     echo "bowtie2"
-    bowtie2 --end-to-end -x ${index} -1 ${input1} -2 ${input2} -S ${output}
-	bowtie2 --end-to-end --trim3 3 -x ${index} -1 ${input11} -2 ${input22} -S ${output2}
+   bowtie2 --end-to-end -x ${index} -1 ${input1} -2 ${input2} -S ${output}
+   bowtie2 --end-to-end --trim3 3 -x ${index} -1 ${input11} -2 ${input22} -S ${output2}
 fi
 
 #fi
 
 ## sam to sorted bam
-input=$output
-input2=$output2
-output=${workpath}/${NAME}.aligned_sorted_cut1.bam
-output2=${workpath}/${NAME}.aligned_sorted_cut3.bam
-if [ ! -f ${output} ];then
-echo "sort"
-samtools view -b ${input} | samtools sort -T $TMPDIR - > ${output}
-samtools view -b ${input2} | samtools sort -T $TMPDIR - > ${output2}
-fi
+#input=$output
+#input2=$output2
+#output=${workpath}/${NAME}.aligned_sorted_cut1.bam
+#output2=${workpath}/${NAME}.aligned_sorted_cut3.bam
+#if [ ! -f ${output} ];then
+#echo "sort"
+#samtools view -b ${input} | samtools sort -T $TMPDIR - > ${output}
+#samtools view -b ${input2} | samtools sort -T $TMPDIR - > ${output2}
+#fi
 
