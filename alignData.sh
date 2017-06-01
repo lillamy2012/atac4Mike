@@ -42,8 +42,13 @@ export TMPDIR=$PBS_O_WORKDIR/${NAME}_tmp
 mkdir -p $TMPDIR
 echo $TMPDIR
 
+#output folder
+myout=$PBS_O_WORKDIR/${NAME}
+mkdir -p $myout
+echo $myout
+
 input=${bampath}/${NAME}.bam
-output1=${workpath}/${NAME}_R1_.fastq
+output1=${myout}/${NAME}_R1_.fastq
 
 #trim to same length if different sequencing lengths 
 if [ ! -f ${output1} ];then
@@ -52,7 +57,7 @@ if [ ! -f ${output1} ];then
     samtools view -f 0x40 -b ${input} | samtools bam2fq - | fastx_trimmer -l $l_trim -Q33 -o ${output1}
 fi
 
-output2=${workpath}/${NAME}_R2_.fastq
+output2=${myout}/${NAME}_R2_.fastq
 if [ ! -f ${output2} ];then
 # fastx_trimmer [-l N]       = Last base to keep. Default is entire read.
    samtools view -f 0x80 -b ${input} | samtools bam2fq -| fastx_trimmer -l $l_trim -Q33 -o ${output2}
@@ -63,10 +68,10 @@ fi
 
 input1=${output1}
 input2=${output2}
-output1=${workpath}/${NAME}_R1_cut1.fastq
-output2=${workpath}/${NAME}_R2_cut1.fastq
-output11=${workpath}/${NAME}_R1_cut3.fastq
-output22=${workpath}/${NAME}_R2_cut3.fastq
+output1=${myout}/${NAME}_R1_cut1.fastq
+output2=${myout}/${NAME}_R2_cut1.fastq
+output11=${myout}/${NAME}_R1_cut3.fastq
+output22=${myout}/${NAME}_R2_cut3.fastq
 
 
 
@@ -81,8 +86,8 @@ input1=${output1}
 input2=${output2}
 input11=${output11}
 input22=${output22}
-output=${workpath}/${NAME}.aligned_cut1.sam
-output2=${workpath}/${NAME}.aligned_cut3.sam
+output=${myout}/${NAME}.aligned_cut1.sam
+output2=${myout}/${NAME}.aligned_cut3.sam
 
 if [ ! -f ${output} ];then
     echo "bowtie2"
