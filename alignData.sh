@@ -98,13 +98,13 @@ fi
 #fi
 
 ## sam to sorted bam
-#input=$output
-#input2=$output2
-#output=${workpath}/${NAME}.aligned_sorted_cut1.bam
-#output2=${workpath}/${NAME}.aligned_sorted_cut3.bam
-#if [ ! -f ${output} ];then
-#echo "sort"
-#samtools view -b ${input} | samtools sort -T $TMPDIR - > ${output}
-#samtools view -b ${input2} | samtools sort -T $TMPDIR - > ${output2}
-#fi
+input=$output
+input2=$output2
+output=${myout}/${NAME}.aligned_sorted_cut1.bam
+output2=${myout}/${NAME}.aligned_sorted_cut3.bam
+if [ ! -f ${output} ];then
+	echo "sort"
+	samtools view -b ${input} | samtools sort -T $TMPDIR - > ${output}
+	samtools view -b ${input2} | samtools sort -T $TMPDIR - > ${output2}
+fi
 

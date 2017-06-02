@@ -1,6 +1,4 @@
-SCN_rep1	HJVMFBCXX_1_20160212B_20160213.bam.bc#34782.aligned_sorted_cut1	sample	sperm	1	30
-SCN_rep2	38701_TAAGGCGA_HKVVFBCXX_2_20160407B_20160407.aligned_sorted_cut1	sample	sperm	2	vv
-VCN_rep1	HJVMFBCXX_1_20160212B_20160213.bam.bc#34762.aligned_sorted_cut1	sample	veg	1	vv
-VCN_rep2	38702_CGTACTAG_HKVVFBCXX_2_20160407B_20160407.aligned_sorted_cut1	sample	veg	2	vv
-SRR_rep1	SRR4000476.aligned_sorted_cut1	sample	SRR	1	VCN_input
-SRR_rep2	SRR4000477.aligned_sorted_cut1	sample	SRR	2	VCN_input
+SCN_rep1	HJVMFBCXX_1_20160212B_20160213.bam.bc#34782.aligned_sorted_cut1	sample	sperm	1
+SCN_rep2	38701_TAAGGCGA_HKVVFBCXX_2_20160407B_20160407.aligned_sorted_cut1	sample	sperm	2
+VCN_rep1	HJVMFBCXX_1_20160212B_20160213.bam.bc#34762.aligned_sorted_cut1	sample	veg	1
+VCN_rep2	38702_CGTACTAG_HKVVFBCXX_2_20160407B_20160407.aligned_sorted_cut1	sample	veg	2
