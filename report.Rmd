@@ -1,0 +1,584 @@
+---
+title: "Report of ATAC-seq pipeline"
+output: 
+  html_document:
+    toc: true
+    theme: united
+date: '`r format(Sys.time(), "%d %B, %Y")`'
+---
+
+<!-- First set up R variables and load packages -->
+
+```{r,include=F}
+library(knitr)
+source("R/functions.R")
+settings=read.table("setting.txt",row.names = 1)
+colnames(settings)="settings"
+files=read.table("files.tab")
+colors=defineColors(files)
+c_order=unique(colors$V4[-nrow(colors)])
+colnames(files)=c("NAME","BAM","sample/input","type","replicate","input")
+out=settings["out",]
+c_work=settings["workpath",]
+workdir = getwd()
+
+filetypes2 = data.frame(nr=c(1:5),filename=c("marked_duplicates", "marked_duplicates.filtered","filter.duprm.mer" ,"filter.duprm.0mer","uniq_filtered"),description=c("Aligned file with duplicates marked but NOT removed","Aligned file nr 1 but filtered on quality","Part of aligned file 2 where insert size > 180bp","Part of aligned file 2 where insert size < 100bp","Aligned file 2 but with duplicates removed")) ## move to readin file
+
+qa=c("depth_table_fig1.png","depth_table_fig2.png","IS_fig1.png","numbers_fig1.png","numbers_fig2.png","numbers_fig3.png")
+
+## figure text
+textqa=c("The coverage distribution for each track. This is calculated as how many bp in the genome (y-axis) has a specific coverage (x-axis). Samples sequenced deeper (more total reads) normally show a broader distribution centered around a larger value than samples with less reads.",
+         
+         "The <a href='https://en.wikipedia.org/wiki/Cumulative_distribution_function'>cdf</a> of the coverage from figure above. The dot represents the dispersion estimate. The dispersion is a measure of 'unexplained' variance in the coverage and is currently estimated by fitting a <a href='https://en.wikipedia.org/wiki/Negative_binomial_distribution'>negative binominal distribution</a> to the coverage data and extract the fitted dispersion. The idea was that the dispersion would capture how uniform the coverage is across the genome, but I am not sure it actually works. The right y-axis scale is for the dispersion and the left one for the cdf.",
+         
+         "Insertion size distribution. If a dip is present at around the read length, it is due to adapter residuals that were not removed by cut adapt and later in the alignment step caused mismatches. By trimming the three first bases of the reads before aligning (can be to at the same time with e.g. Bowtie2), this drop should disappear", 
+         
+         "Alignment statistics for each sample used.",
+         
+         "Duplication rate for each sample. Note that in the uniq_filtered bam files all duplicated have been removed hence no red bars in the plot.",
+         
+         "Read statistics for each sample used. The two first statistics (average and max length) should be close to the sequenced read length (e.g. 50 bp). Ideally you would like the average quality to be similar in all samples. The insert size mean and deviation tend to vary a bit between samples, also between replicates. It seems like the naked DNA sample (input) usually has a larger variation. This could be because there are no restrictions on where the enzyme can cleave. For a more detailed view of the insert distribution look at the 'Insert size distribution' plot above.")
+
+peakF = c("MACS2_noInput","withInput_tL","withInput")
+peakN = c("fig11.png","fig12.png","fig13.png","fig3.png","fig4.png","fig5.png")
+## figure text
+textPeak = c(paste(c_order,rep(" Overlap between replicates. Please note that this is done on the merged peak set described  above.",3),sep=":"),
+             
+             "Overlap between celltypes (approach 1). In this approach a peak needs to be <i>found in all replicates</i> to be called in the celltype as whole. This means to be a common peak, the peak has to be found in ALL samples sequenced (all replicates of all celltypes). To be celltype specific it has to be found in all replicates of one celltype only (it can be found in some replicates of the other cell type). One might think at first thought that this is a conservative analysis, but in fact it is not. Although the common peaks are chosen conservatively the celltype specific ones are not. For example if a peak is found in two of three replicates of one celltype you might believe that this peak is real but the peak will be cell specifc for any other celltype if it there is present in all replicates.",
+             
+             "Overlap between celltypes (appraoch 2). In this approach a peak needs to be <i>found in at least one replicates</i> to be called in the celltype as whole. This means to be a common peak, the peak has to be found in at least one replicate of each celltype sequenced. To be celltype specific it has to be completely missing in all replicated in all samples except one (in the celltype where it is found it can be present in one or more replicates. In contrast to approach 1 this approach is not conservative when it comes to identify common peaks, it is however sort of conservative when it comes to identify cell specific peaks.",
+             
+             "Peak length distrubution. This figure shows the length distribution of the peaks found in each sample (that is not of the merged superset of peaks used in the overlap analysis). Sometimes one sees a binominal distribution with two peaks in the distributions. This (as far as I know) only seen in the 0mer dataset, that is the bam files were only reads with short insert sizes are keep. Never the less it would be interesting to investigate further")
+
+deseqF = c("MACS2_withInput_deseq_all_deseq","MACS2_withInput_deseq_samples_deseq")
+deseqN = c("fig1.png","fig2.png","fig3.png","fig4.png")
+
+## figure text
+textdeseqN=c("PCA plot showing the two most important axes. PC1 is the axis that explains most of the variation and PC2 the second most. Replicates should ideally cluster close together.",
+             "Heatmap showing the expression data of the 20 peak regions with the most reads",
+             "Sample-to-sample distances. Heatmap showing the Euclidean distances between the samples.", 
+             "Pairs plot of all samples, the numbers in the upper panels show the correlation. The read line is the straight line through origo with a slope of 1")
+textMA=c("A so called ma plot generated by the DESeq2 package. The red points are peaks with an adjusted pvalue <0.1")
+textscatter=c("Scatter plot showing the same data as the ma plot. On the y and x axis we have the mean normalized counts for each condition. Red dots represent peaks significant (padj<0.1). Dots outside the dashed lines represent peaks with a fold change > 2")
+
+
+downloadTxt=c("The list available (above) for download contains information of the merged peak set used in the section above. The first 15 columns contain information about the peak: location, width, annotation and info about the associated gene. The remaining columns contain information about where the peak was found. Each column represent one sample, if a peak was found in this sample the cell will contain 1, if the peak was missing 0. Below are all individual MACS2 narrowpeak files generated using this bam file type and macs2 setting listed")
+```
+
+```{r,include=FALSE}
+figs=grep("png",dir(out),value=T)
+```
+
+
+<!-- Define functions -->
+
+```{r,include=F}
+linkToFile = function(out,file,link){
+  o0 = paste(out,file,sep="/")
+  if (file%in%dir(out)){
+    cat('[',link,'](',o0,')') 
+}
+}
+
+
+plotfun = function(img){
+  o0 = sapply(strsplit(img,"/"),"[[",1)
+  o1 = sapply(strsplit(img,"/"),"[[",2)
+    if (o1%in%dir(o0) ){
+      cat('\n <img src="', img,'" width="400" > \n',sep="")
+      return(TRUE)
+    }
+  return(FALSE)
+}
+
+plotQA = function(filetype,qa){
+  for (j in 1:length(qa)){
+    i=qa[j]
+    img=paste(out,paste(filetype,i,sep="_"),sep="/")
+    plotfun(img)
+    cat('\n')
+    cat(textqa[j])
+    cat('\n')
+    #cat('\n')
+    #cat('\n <img src="', img,'" width="400"> \n',sep="")
+  }
+}
+
+plotPeak = function(filetype,peakF,peakN,text)
+for (i in peakF){ 
+  for (k in 1:length(peakN)){
+    j=peakN[k]
+    img=paste(out,paste(paste(filetype,i,sep="_"),j,sep="_"),sep="/")
+    cat('\n')
+    a=plotfun(img)
+    if(a==TRUE){
+      cat('\n')
+      cat(text[k])
+      }
+  }
+}
+
+plotDeseq = function(filetype,type,fig,text){
+  for (i in type){
+    for (k in 1:length(fig)){
+      j=fig[k]
+      img = paste(out,paste(paste(filetype,i,sep="_"),j,sep="_"),sep="/")
+      plotfun(img)
+      cat('\n')
+      cat(text[k])
+      cat('\n')
+    }
+  }
+}
+
+downloadMergedPeak = function(filetype,mac,text=downloadTxt,link="Download peak list",end="anno.csv"){
+  file = paste(filetype,mac,end,sep="_")
+  cat('\n')
+  cat('\n')
+  linkToFile(out=out,file=file,link=link)
+  cat('\n')
+  cat('\n')
+  cat(text)
+  cat('\n')
+}
+
+downloadNarrow = function(filetype,mac,names,end="peaks.narrowPeak"){
+   file = paste(filetype,mac,end,sep="_")
+   for(i in names){
+      new = paste(i,file,sep=".")
+      cat('\n')
+      linkToFile(out=out,file=new,link=new)
+      cat('\n')
+   }
+}
+
+
+
+
+```
+
+
+<!-- Write report -->
+
+# Summary 
+## About report
+## Limitations
+### Number of replicates
+As the pipeline is currently implemented the maximal number of replicates is 3 (minimum 1). This limitation is due to the venn diagram visualization of the overlaps between replicates. It is possible to have venn diagrams with more that 3 samples, but at some point the resulting figure becomes hard to interpret. My suggestion is to then move to a barplot representation of the overlaps. This can fairly easily be added to the pipeline in case there would be higher number of replicates available. 
+
+### Number of celltypes
+Currently the pipeline can handle up to three different cell types (plus inputs). This limitation is again due to the venn diagram visualization used for the overlap. As with the number of replicates, this limitation could be removed my moving towards a barplot visualization. 
+
+### Input sample(s)
+It is currently advisable to use the same input for all cell types. This is due to the DESeq2 analysis step where we assume that the number of input reads is the same across all cell types. The rest of the report would be correct even if different inputs were to be used for the different cell types.  
+
+## Figure formats
+All figures are, in addition to the png format presented in the report, also available as pdf files in the sub folder:
+```{r,echo=F, results='asis'}
+#fp = paste(workdir,out,sep="/")
+cat(out)
+```
+
+
+
+# Settings used 
+
+Where the bam files came from, where the jobs where run, the output folder and which quality threshold was used.
+
+```{r,echo=F}
+kable(settings)
+```
+
+# Files used
+
+List of all bam files used as input.
+
+```{r,echo=F}
+kable(files)
+```
+
+# Types of aligned bam files generated
+
+Description of the different types of bam files generated by the pipeline. 
+
+```{r,echo=F}
+kable(filetypes2)
+```
+
+# All bam files
+
+List of all files generated and where to find them (on scratch). The uniq_filtered.bam files are also available in the sub folder "bam".  
+
+```{r,include=F}
+toList=list()
+for (i in files$NAME){
+  for (j in filetypes2$filename){
+    toList[[paste(i,j)]]=(paste(i,j,"bam",sep="."))
+  }
+}
+bamList=as.data.frame(do.call("rbind",toList))
+rownames(bamList)=1:nrow(bamList)
+colnames(bamList)="bam"
+bamList$path=paste(c_work,"bam",bamList$bam,sep="/")
+```
+
+```{r,echo=F}
+kable(bamList)
+```
+
+# Quality assessments
+
+Quality assessments for each type of bam file separately. 
+
+## marked_duplicates
+
+Aligned file with duplicates marked but NOT removed. 
+
+```{r,results = 'asis',echo=F}
+filetype="marked_duplicates"
+plotQA(filetype, qa)
+```
+
+## marked_duplicates.filtered
+Aligned file nr 1 (marked_duplicates) but filtered on quality
+
+```{r,results = 'asis',echo=F}
+filetype="marked_duplicates_filtered"
+plotQA(filetype, qa)
+```
+
+## uniq_filtered
+Aligned file 2 (marked_duplicates.filtered) but with duplicates removed
+
+```{r,results = 'asis',echo=F}
+filetype="uniq_filtered"
+plotQA(filetype, qa)
+```
+
+# Peak summary
+
+## Peak set used
+
+To define a set of peaks to compare across samples the following steps where performed:
+<ol>
+<li>All peaks called in at least one track (replicate and/or cell type) where combined to a super set of peaks.
+<li>The peaks in the super set separated by less that 100 by were merged
+<li>For each merged peak, potential overlaps with the original peaks from each sample were identified.
+</ol>
+
+
+## MACS2 settings
+
+Peak summary for each type of bam file separately. For each bam file type, MACS2 was run in three different ways: without use of the input, with the input and down scaling the larger bam files to the smallest (default behavior when using MACS2 with input) and finally with the input but up scaling the small bam files to the larger ones.
+
+According to the MACS2 manual up scaling the small bam  will increase the number of false positives. Hence the default with input run might be the best peak set to use. 
+
+## marked_duplicates_filtered
+
+```{r,include=F}
+filetype="marked_duplicates_filtered"
+filetype_a="marked_duplicates.filtered"
+```
+
+### without input
+
+```{r,results = 'asis',echo=F}
+mac="MACS2_noInput"
+plotPeak(filetype,mac,peakN,textPeak)
+downloadMergedPeak(filetype,mac)
+downloadNarrow(filetype_a,mac,names=subset(files$NAME,!is.na(files$input)))
+```
+
+### with input
+
+```{r,results = 'asis',echo=F}
+mac="MACS2_withInput"
+plotPeak(filetype,mac,peakN,textPeak)
+downloadMergedPeak(filetype,mac)
+downloadNarrow(filetype_a,mac,names=subset(files$NAME,!is.na(files$input)))
+```
+
+### with input to larger
+
+```{r,results = 'asis',echo=F}
+mac="MACS2_withInput_tL"
+plotPeak(filetype,mac,peakN,textPeak)
+downloadMergedPeak(filetype,mac)
+downloadNarrow(filetype_a,mac,names=subset(files$NAME,!is.na(files$input)))
+```
+
+## filter.duprm.mer
+```{r,include=F}
+filetype="filter_duprm_mer"
+filetype_a="filter.duprm.mer"
+```
+### without input
+
+```{r,results = 'asis',echo=F}
+mac="MACS2_noInput"
+plotPeak(filetype,mac,peakN,textPeak)
+downloadMergedPeak(filetype,mac)
+downloadNarrow(filetype_a,mac,names=subset(files$NAME,!is.na(files$input)))
+```
+
+### with input
+
+```{r,results = 'asis',echo=F}
+mac="MACS2_withInput"
+plotPeak(filetype,mac,peakN,textPeak)
+downloadMergedPeak(filetype,mac)
+downloadNarrow(filetype_a,mac,names=subset(files$NAME,!is.na(files$input)))
+```
+
+### with input to larger
+
+```{r,results = 'asis',echo=F}
+mac="MACS2_withInput_tL"
+plotPeak(filetype,mac,peakN,textPeak)
+downloadMergedPeak(filetype,mac)
+downloadNarrow(filetype_a,mac,names=subset(files$NAME,!is.na(files$input)))
+```
+
+## filter.duprm.0mer 
+```{r,include=F}
+filetype="filter_duprm_0mer"
+filetype_a="filter.duprm.0mer"
+```
+### without input
+
+```{r,results = 'asis',echo=F}
+mac="MACS2_noInput"
+plotPeak(filetype,mac,peakN,textPeak)
+downloadMergedPeak(filetype,mac)
+downloadNarrow(filetype_a,mac,names=subset(files$NAME,!is.na(files$input)))
+```
+
+### with input
+
+```{r,results = 'asis',echo=F}
+mac="MACS2_withInput"
+plotPeak(filetype,mac,peakN,textPeak)
+downloadMergedPeak(filetype,mac)
+downloadNarrow(filetype_a,mac,names=subset(files$NAME,!is.na(files$input)))
+```
+
+### with input to larger
+
+```{r,results = 'asis',echo=F}
+mac="MACS2_withInput_tL"
+plotPeak(filetype,mac,peakN,textPeak)
+downloadMergedPeak(filetype,mac)
+downloadNarrow(filetype_a,mac,names=subset(files$NAME,!is.na(files$input)))
+```
+
+## uniq_filtered
+
+```{r,include=F}
+filetype="uniq_filtered"
+```
+### without input
+
+```{r,results = 'asis',echo=F}
+mac="MACS2_noInput"
+plotPeak(filetype,mac,peakN,textPeak)
+downloadMergedPeak(filetype,mac)
+downloadNarrow(filetype,mac,names=subset(files$NAME,!is.na(files$input)))
+```
+
+### with input
+
+```{r,results = 'asis',echo=F}
+mac="MACS2_withInput"
+plotPeak(filetype,mac,peakN,textPeak)
+downloadMergedPeak(filetype,mac)
+downloadNarrow(filetype,mac,names=subset(files$NAME,!is.na(files$input)))
+```
+
+### with input to larger
+
+```{r,results = 'asis',echo=F}
+mac="MACS2_withInput_tL"
+plotPeak(filetype,mac,peakN,textPeak)
+downloadMergedPeak(filetype,mac)
+downloadNarrow(filetype,mac,names=subset(files$NAME,!is.na(files$input)))
+```
+
+
+# DEseq2 analysis 
+
+DEseq2 analysis, only performed on peaks called using uniq_filtered files together with an input (two settings).  
+
+## uniq_filtered, with input
+
+### Peaks and counts
+Here is the gff file used to define the peaks used:
+```{r,results = 'asis',echo=F}
+gfile="uniq_filtered_MACS2_withInput.gff"
+linkToFile(out=out,file=gfile,link="GFF")
+cat('\n')
+```
+
+The counts per samples can be found here:
+```{r,results = 'asis',echo=F}
+counts=grep("uniq_filtered_MACS2_withInput_counts.tab",dir(out),value=T)
+for (file in counts){
+  cat('\n')
+  linkToFile(out=out,file=file,link=file)
+  cat('\n')
+}
+```
+
+And an R data object (DESeqDataSet from [DEseq2](https://www.bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.pdf)) that can be loaded into R and used to perform alternative analysis.
+
+```{r,echo=F,results='asis'}
+ff = "uniq_filtered_MACS2_withInput_deseq_dds.Rdata"
+linkToFile(out=out,file=ff,link="R data object")
+```
+
+
+
+The functions <i>estimateSizeFactors</i> and <i>estimateDispersion</i> (using default settings) have been run but can be overwritten if one wants to. One can also get the raw counts out as a matrix using the command: <b>counts(dds,normalized=FALSE)</b>
+
+### Plots
+
+```{r,results = 'asis',echo=F}
+filetype="uniq_filtered_MACS2_withInput"
+type=c("deseq_all_deseq","deseq_samples_deseq")
+fig=c("fig1.png","fig2.png","fig3.png","fig4.png")
+plotDeseq(filetype,type,fig,textdeseqN)
+```
+```{r,echo=F,results = 'asis'}
+type="type"
+ma = grep("withInput_deseq",grep("ma.png",grep(type,dir(out),value=T),value=T),value=T)
+#ma = grep("ma.png",grep(type,dir(out),value=T),value=T)
+mas = paste(out,ma,sep="/")
+for (i in 1:length(mas)){
+plotfun(mas[i])
+}
+cat('\n')
+cat(textMA)
+cat('\n')
+scatt=grep("withInput_deseq",grep("scatter.png",grep(type,dir(out),value=T),value=T),value=T)
+scatts = paste(out,scatt,sep="/")
+for (i in 1:length(scatts)){
+plotfun(scatts[i])
+}
+cat('\n')
+ cat(textscatter)
+cat('\n')
+```
+
+### List
+```{r, include= F}
+pcsv = grep("withInput_deseq",grep("type",grep("csv",dir(out),value=T),value=T),value=T)
+acsv = grep("withInput_deseq",grep("anova",grep("csv",dir(out),value=T),value=T),value=T)
+```  
+```{r,results = 'asis',echo=F}
+if(length(acsv)>0){
+  linkToFile(out=out,file=acsv,link="Anova like analyis(glm) - difference between any sample types ")
+  cat('\n')
+}
+for (i in pcsv){
+  cat('\n')
+  v = gsub(".csv","",unlist(strsplit(strsplit(i,"_type_")[[1]][2],"_")))
+  ll = paste("Pairwise: ",paste(v,collapse = "-"))
+  linkToFile(out=out,file=i,link=ll)
+  cat('\n')
+}
+```
+
+## uniq_filtered, with input to larger
+
+### Peaks and counts
+Here is the gff file used to define the peaks used:
+```{r,results = 'asis',echo=F}
+gfile="uniq_filtered_MACS2_withInput_tL.gff"
+linkToFile(out=out,file=gfile,link="GFF")
+cat('\n')
+```
+
+The counts per samples can be found here:
+```{r,results = 'asis',echo=F}
+counts=grep("uniq_filtered_MACS2_withInput_tL_counts.tab",dir(out),value=T)
+for (file in counts){
+  cat('\n')
+  linkToFile(out=out,file=file,link=file)
+  cat('\n')
+}
+```
+
+And an R data object (DESeqDataSet from [DEseq2](https://www.bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.pdf)) that can be loaded into R and used to perform alternative analysis.
+
+```{r,echo=F,results='asis'}
+ff="uniq_filtered_MACS2_withInput_tL_deseq_dds.Rdata"
+linkToFile(out=out,file=ff,link="R data object")
+```
+
+
+
+The functions <i>estimateSizeFactors</i> and <i>estimateDispersion</i> (using default settings) have been run but can be overwritten if one wants to. One can also get the raw counts out as a matrix using the command: <b>counts(dds,normalized=FALSE)</b>
+
+### Plots
+
+```{r,results = 'asis',echo=F}
+filetype="uniq_filtered_MACS2_withInput_tL"
+type=c("deseq_all_deseq","deseq_samples_deseq")
+fig=c("fig1.png","fig2.png","fig3.png","fig4.png")
+plotDeseq(filetype,type,fig,textdeseqN)
+```
+```{r,echo=F,results = 'asis'}
+type="type"
+ma = grep("withInput_tL_deseq",grep("ma.png",grep(type,dir(out),value=T),value=T),value=T)
+#ma = grep("ma.png",grep(type,dir(out),value=T),value=T)
+mas = paste(out,ma,sep="/")
+for (i in 1:length(mas)){
+plotfun(mas[i])
+}
+cat('\n')
+cat(textMA)
+cat('\n')
+scatt=grep("withInput_tL_deseq",grep("scatter.png",grep(type,dir(out),value=T),value=T),value=T)
+scatts = paste(out,scatt,sep="/")
+for (i in 1:length(scatts)){
+plotfun(scatts[i])
+}
+cat('\n')
+ cat(textscatter)
+cat('\n')
+```
+
+### List
+```{r, include= F}
+pcsv = grep("withInput_tL_deseq",grep("type",grep("csv",dir(out),value=T),value=T),value=T)
+acsv = grep("withInput_tL_deseq",grep("anova",grep("csv",dir(out),value=T),value=T),value=T)
+```  
+```{r,results = 'asis',echo=F}
+if(length(acsv)>0){
+  linkToFile(out=out,file=acsv,link="Anova like analyis(glm) - difference between any sample types ")
+  cat('\n')
+}
+for (i in pcsv){
+  cat('\n')
+  v = gsub(".csv","",unlist(strsplit(strsplit(i,"_type_")[[1]][2],"_")))
+  ll = paste("Pairwise: ",paste(v,collapse = "-"))
+  linkToFile(out=out,file=i,link=ll)
+  cat('\n')
+}
+```
+
+
+
+
+
+<!-- End report -->
+
+
+
+
+
+
+
+
+
+
+
