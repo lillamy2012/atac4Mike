@@ -33,7 +33,7 @@ done
 
 # setup submission
 
-## level a:
+## level a: ## generate all alignment files and tables
 
 i=0
 for ff in generateFiles generateTables; do
@@ -41,7 +41,7 @@ for ff in generateFiles generateTables; do
 	((i+=1))
 done
 
-## level b
+## level b: ## run statistics on alignment files, run macs2
 
 i=0
 for ff in  run_statistics run_macs run_samtools_mult run_samtools_uniq getIS tableCov; do
@@ -51,22 +51,25 @@ for ff in  run_statistics run_macs run_samtools_mult run_samtools_uniq getIS tab
 done
 
 
-## level c
+## level c ## rplots
 ff=run_R_plots
 cl=$(qsub -W depend=afterok:${b[0]}:${b[1]}:${b[2]}:${b[3]}:${b[4]}:${b[5]} $out/$ff.sh)
 
-## level d
+## level d ## could be level c, merging MACS2 peaks - add so also gff of individual peaks
 ff=run_R_peaks
 d=$(qsub -W depend=afterok:$cl $out/$ff.sh)
 
 
-## level e
+## level e ## count - add also ind
 ff=count_reads_in_peakregions
 e=$(qsub -W depend=afterany:$d $out/$ff.sh)
 
-## level f
+## level f ## run deseq and calculate tpm (should tpm be added to ouput) 
 ff=run_R_deseq
 fl=$(qsub -W depend=afterok:$e $out/$ff.sh)
+ff2=run_tpm
+ffl=$(qsub -W depend=afterok:$e $out/$ff2.sh)
+
 
 ## level g
 #summarize
