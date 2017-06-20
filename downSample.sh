@@ -24,10 +24,10 @@ alignpath=$(grep alignpath $settingsfile | awk '{print $2}')
 
 # === START ===
 
-path=$PBS_O_WORKDIR/bam
+myout=$PBS_O_WORKDIR/bam
 
 input=${myout}/${NAME}.aligned_sorted_cut1.bam
 
 output=${myout}/${NAME}.aligned_sorted_cut1_small.bam
 
-samtools view -s 0.1 $input > $output
+samtools view -s 0.01 -b $input > $output
