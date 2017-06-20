@@ -5,7 +5,7 @@
 #PBS -q workq
 #PBS -l walltime=40:00:00
 #PBS -l select=1:ncpus=6:mem=20gb
-#PBS -J 2-4
+#PBS -J 5-7
 
 
 # === begin ENVIRONMENT SETUP ===
