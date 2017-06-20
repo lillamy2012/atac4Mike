@@ -64,7 +64,7 @@ d=$(qsub -W depend=afterok:$cl $out/$ff.sh)
 ff=count_reads_in_peakregions
 e=$(qsub -W depend=afterany:$d $out/$ff.sh)
 
-## level f ## run deseq and calculate tpm (should tpm be added to ouput) 
+## level f ## run deseq and calculate tpm (should tpm be added to ouput)
 ff=run_R_deseq
 fl=$(qsub -W depend=afterok:$e $out/$ff.sh)
 ff2=run_tpm

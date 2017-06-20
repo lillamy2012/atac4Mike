@@ -3,4 +3,5 @@ bampath	/lustre/scratch/users/elin.axelsson/demult
 index	/lustre/scratch/projects/berger_common/TAIR10/Bowtie2Index/Arabidopsis_thaliana.TAIR10.31.dna_rm.genome
 alignpath /lustre/scratch/users/elin.axelsson/atac4Mike/bam
 outname	out_cut1V3
+tmp_path tmp_file
 Q_threshold	10
