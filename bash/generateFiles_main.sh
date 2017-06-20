@@ -35,7 +35,7 @@ echo "ALIGN: $ALIGN"
 export TMPDIR=$WORKDIR/Mike/picard_tmp
 # make sure the directory exists
 mkdir -p $TMPDIR
-
+mkdir -p ${workpath}/${tmp}
 
 ## quality filter and remove duplicates
 
