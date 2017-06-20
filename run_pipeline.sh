@@ -23,7 +23,7 @@ bashpath="bash/"
 
 # generatate PBS header for files
 
-for ff in generateFiles generateTables run_macs run_statistics run_samtools_mult run_samtools_uniq getIS tableCov run_R_plots run_R_peaks count_reads_in_peakregions run_R_deseq; do
+for ff in generateFiles generateTables generateStatistics mergeReplicates run_macs run_statistics run_samtools_mult run_samtools_uniq getIS tableCov run_R_plots run_R_peaks count_reads_in_peakregions run_R_deseq; do
     createHead -f files.tab -s setting.txt -o $(pwd)/$out -w $ff > $out/${ff}.sh
     cat ${bashpath}${ff}_main.sh >> $out/${ff}.sh
 done
@@ -35,40 +35,40 @@ done
 
 ## level a: ## generate all alignment files and tables
 
-i=0
-for ff in generateFiles generateTables; do
-   	a[i]=$(qsub -h $out/${ff}.sh)
+#i=0
+#for ff in generateFiles generateTables; do
+#   	a[i]=$(qsub -h $out/${ff}.sh)
 	((i+=1))
-done
+#done
 
 ## level b: ## run statistics on alignment files, run macs2
 
-i=0
-for ff in  run_statistics run_macs run_samtools_mult run_samtools_uniq getIS tableCov; do
-    b[i]=$(qsub -W depend=afterok:${a[1]}:${a[0]} $out/$ff.sh )
+#i=0
+#for ff in  run_statistics run_macs run_samtools_mult run_samtools_uniq getIS tableCov; do
+#    b[i]=$(qsub -W depend=afterok:${a[1]}:${a[0]} $out/$ff.sh )
 #b[i]=$(qsub -h $ff.sh )
-	((i+=1))
-done
+#	((i+=1))
+#done
 
 
 ## level c ## rplots
-ff=run_R_plots
-cl=$(qsub -W depend=afterok:${b[0]}:${b[1]}:${b[2]}:${b[3]}:${b[4]}:${b[5]} $out/$ff.sh)
+#ff=run_R_plots
+#cl=$(qsub -W depend=afterok:${b[0]}:${b[1]}:${b[2]}:${b[3]}:${b[4]}:${b[5]} $out/$ff.sh)
 
 ## level d ## could be level c, merging MACS2 peaks - add so also gff of individual peaks
-ff=run_R_peaks
-d=$(qsub -W depend=afterok:$cl $out/$ff.sh)
+#ff=run_R_peaks
+#d=$(qsub -W depend=afterok:$cl $out/$ff.sh)
 
 
 ## level e ## count - add also ind
-ff=count_reads_in_peakregions
-e=$(qsub -W depend=afterany:$d $out/$ff.sh)
+#ff=count_reads_in_peakregions
+#e=$(qsub -W depend=afterany:$d $out/$ff.sh)
 
 ## level f ## run deseq and calculate tpm (should tpm be added to ouput)
-ff=run_R_deseq
-fl=$(qsub -W depend=afterok:$e $out/$ff.sh)
-ff2=run_tpm
-ffl=$(qsub -W depend=afterok:$e $out/$ff2.sh)
+#ff=run_R_deseq
+#fl=$(qsub -W depend=afterok:$e $out/$ff.sh)
+#ff2=run_tpm
+#ffl=$(qsub -W depend=afterok:$e $out/$ff2.sh)
 
 
 ## level g
@@ -77,8 +77,8 @@ ffl=$(qsub -W depend=afterok:$e $out/$ff2.sh)
 
 ## release first level
 
-qrls ${a[0]}
-qrls ${a[1]}
+#qrls ${a[0]}
+#qrls ${a[1]}
 
 #qrls ${b[0]}
 #qrls ${b[1]}
