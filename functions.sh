@@ -27,6 +27,12 @@ createHead() { local OPTIND;
     generateFiles) # generateFiles
         printf %"s\n" "#!/bin/bash" "#PBS -N generate_files" "#PBS -P berger_common" "#PBS -q workq" "#PBS -l walltime=05:00:00" "#PBS -e $out/generate_files_error_out" "#PBS -j eo" "#PBS -l select=1:ncpus=16:mem=62gb" "#PBS -J 1-$nrBJ"
     ;;
+    generateStatistics) # generateStatistics
+        printf %"s\n" "#!/bin/bash" "#PBS -N generate_statistics" "#PBS -P berger_common" "#PBS -q workq" "#PBS -l walltime=05:00:00" "#PBS -e $out/generate_statistics_error_out" "#PBS -j eo" "#PBS -l select=1:ncpus=16:mem=62gb" "#PBS -J 1-$nrBJ"
+    ;;
+    mergeReplicates) #
+        printf %"s\n" "#!/bin/bash" "#PBS -N merge_reps" "#PBS -P berger_common" "#PBS -q workq" "#PBS -l walltime=02:00:00" "#PBS -e $out/merge_reps_error_out" "#PBS -j eo"
+    ;;
     generateTables) # generateTables
         printf %"s\n" "#!/bin/bash" "#PBS -N generate_tables" "#PBS -P berger_common" "#PBS -q workq" "#PBS -l walltime=00:02:00" "#PBS -e $out/generate_tables_error_out" "#PBS -j eo"
     ;;
