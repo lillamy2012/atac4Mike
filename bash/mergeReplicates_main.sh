@@ -8,12 +8,12 @@ PARAM_FILE=$PBS_O_WORKDIR/files.tab
 settingsfile=$PBS_O_WORKDIR/setting.txt
 
 type=$(sed "${PARAM_IDX}q;d" $PARAM_FILE | awk '{print $4}')
-rep==$(sed "${PARAM_IDX}q;d" $PARAM_FILE | awk '{print $5}')
+rep=$(sed "${PARAM_IDX}q;d" $PARAM_FILE | awk '{print $5}')
 workpath=$(grep workpath $settingsfile | awk '{print $2}')
 outname=$(grep outname $settingsfile | awk '{print $2}')
 tmp=$(grep tmp_file $settingsfile | awk '{print $2}')
 
-if [ $rep eq. 1 ]; then
+if [ $rep -eq 1 ]; then
 
     output=${workpath}/${outname}/${type}/${type}.uniq_filtered.bam
     if [ ! -f ${output} ];then
