@@ -10,26 +10,20 @@ module load MACS/2.1.0.20150420.1-goolf-1.4.10-Python-2.7.5
 # === end ENVIRONMENT SETUP ===
 
 PARAM_IDX=$PBS_ARRAY_INDEX
-PARAM_FILE=$PBS_O_WORKDIR/files.tab
+PARAM_FILE=$PBS_O_WORKDIR/files_macs.tab
 settingsfile=$PBS_O_WORKDIR/setting.txt
 
-NAME=$(sed "${PARAM_IDX}q;d" $PARAM_FILE | awk '{print $1}')
-ALIGN=$(sed "${PARAM_IDX}q;d" $PARAM_FILE | awk '{print $2}')
+FULLNAME=$(sed "${PARAM_IDX}q;d" $PARAM_FILE | awk '{print $1}')
 workpath=$(grep workpath $settingsfile | awk '{print $2}')
-bampath=$(grep bampath $settingsfile | awk '{print $2}')
-index=$(grep index $settingsfile | awk '{print $2}')
-alignpath=$(grep alignpath $settingsfile | awk '{print $2}')
-input=$(sed "${PARAM_IDX}q;d" $PARAM_FILE | awk '{print $6}')
-#subn=$(grep subn $settingsfile | awk '{print $2}')
 outname=$(grep outname $settingsfile | awk '{print $2}')
 
 
-echo "NAME: $NAME"
+echo "NAME: $FULLNAME"
 echo "workpath: $workpath"
-echo "bampath: $bampath"
-echo "index: $index"
-echo "ALIGN: $ALIGN"
-echo "input: $input"
+
+path="${FULLNAME%/*}"
+filename="${FULLNAME##*/}"
+
 
 # === START ===
 ## This script starts with a aligned and sorted bam file
@@ -39,30 +33,14 @@ export TMPDIR=$WORKDIR/Mike/picard_tmp
 mkdir -p $TMPDIR
 
 
-#if [ "$input" != "NA" ]; then
 
-# call peaks MACS2 - on all 3 bam files (or only combined)
 
-    for i in uniq_filtered.bam; do
+if [ ! -f ${FULLNAME}_MACS2.done ]; then 
+	 macs2 callpeak -t $FULLNAME -g 1.2e8 -n ${filename}_MACS2_noInput --outdir ${path} --nomodel --shift -100 --extsize 200 -B -q 0.01
+         macs2 callpeak -t $full -g 1.2e8 -n ${filename}_MACS2_paired  --outdir ${path}  -B -q 0.01 -f BAMPE  
 
-#${workpath}/${NAME}.marked_duplicates.filtered.bam; do
-        full=${workpath}/$outname/${NAME}.$i
-        filename=$(basename "${full}")
-        filename="${filename%.*}"
- #       input_file=${workpath}/$outname/${input}.$i
-        if [ ! -f ${workpath}/$outname/${filename}_MACS2peaks.done ];then
-            echo "macs"
-            echo ${filename}
-            macs2 callpeak -t $full -g 1.2e8 -n ${filename}_MACS2_noInput --outdir ${workpath}/$outname --nomodel --shift -100 --extsize 200 -B -q 0.01 
-            macs2 callpeak -t $full -g 1.2e8 -n ${filename}_MACS2_paired  --outdir ${workpath}/$outname  -B -q 0.01 -f BAMPE
-#macs2 callpeak -t $full -c $input_file -g 1.2e8 -n ${filename}_MACS2_withInput --outdir ${workpath}/$outname --nomodel --shift -100 --extsize 200 -B -q 0.01 -f BAMPE
-            touch ${workpath}/$outname/${filename}_MACS2peaks.done
-        fi
-    done
-#fi
+	 touch ${FULLNAME}_MACS2.done
+fi
 
-## next we should stage out the files (MACS peaks and final bam files), run script to retrieve statistsic
-
-## stage out selected files - ${workpath}/${NAME}.sorted.duprm.mer.bam ${workpath}/${NAME}.sorted.duprm.0mer.bam ${workpath}/${NAME}.marked_duplicates.bam  ``
 
 
