@@ -21,7 +21,7 @@ createHead() { local OPTIND;
 
     nrBJ=$(wc -l $file | awk '{print $1}') # simply the number of rows in files.tab
     nrPJ=$(awk '{print $3}' files.tab | grep sample | wc -l)
-
+    nrMJ=$(wc -l files_macs.tab | awk '{print $1}')
 
     case $which in
     generateFiles) # generateFiles
@@ -37,7 +37,7 @@ createHead() { local OPTIND;
         printf %"s\n" "#!/bin/bash" "#PBS -N generate_tables" "#PBS -P berger_common" "#PBS -q workq" "#PBS -l walltime=00:02:00" "#PBS -e $out/generate_tables_error_out" "#PBS -j eo"
     ;;
     run_macs) ## fix J to not include input
-        printf %"s\n" "#!/bin/bash" "#PBS -N run_macs2" "#PBS -P berger_common" "#PBS -q workq" "#PBS -l walltime=10:00:00" "#PBS -e $out/run_macs_error_out" "#PBS -j eo" "#PBS -J 1-$nrPJ" "PBS -l select=1:ncpus=16:mem=62gb"
+        printf %"s\n" "#!/bin/bash" "#PBS -N run_macs2" "#PBS -P berger_common" "#PBS -q workq" "#PBS -l walltime=10:00:00" "#PBS -e $out/run_macs_error_out" "#PBS -j eo" "#PBS -J 1-$nrMJ" "PBS -l select=1:ncpus=16:mem=62gb"
     ;;
     run_statistics)
         printf %"s\n" "#!/bin/bash" "#PBS -N run_stats" "#PBS -P berger_common" "#PBS -q workq" "#PBS -l walltime=00:10:00" "#PBS -e $out/run_statistics_error_out" "#PBS -j eo"
