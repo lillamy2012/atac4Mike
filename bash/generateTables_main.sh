@@ -106,3 +106,19 @@ done
 
 
 
+p_table=( "MACS2_paired"  "MACS2_noInput" )
+
+for k in "${p_table[@]}"
+do
+	echo R_$k.tab
+        #	if [ -f $workpath/$outname/R_$j.$k.tab ];then
+         #   echo "rm"
+         #   rm $workpath/$outname/R_$j.$k.tab
+        #fi
+        for t in "${types[@]}"
+        do
+            echo $t
+                printf "%s\n" $workpath/$outname/$t/${t}.uniq_filtered.bam_${k}_peaks.narrowPeak >> $workpath/$outname/R_$k.tab
+        done
+done
+
