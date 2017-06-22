@@ -24,9 +24,9 @@ do
             echo $i
             printf "%s\n" $i.$j.$k.tab >> $workpath/$outname/R_$j.$k.tab
         done
+	rm $workpath/$outname/R_$j.$k.tab
     done
 done
-
 
 ###
 
@@ -68,9 +68,9 @@ do
                 printf "%s\n" ${i}.${j}_${k}_peaks.narrowPeak >> $workpath/$outname/R_$j.$k.tab
             fi
         done
+	###rm $workpath/$outname/R_$j.$k.tab
     done
 done
-
 
 ## deseq2 files
 
@@ -92,9 +92,9 @@ do
             printf "%s\t" ${i}.${j}_${k}_counts.tab $(grep ^$i $PARAM_FILE | awk '{print $4}') $(grep ^$i $PARAM_FILE | awk '{print $3}') >> $workpath/$outname/R_$j.${k}_deseq.tab
             printf "\n" >>  $workpath/$outname/R_$j.${k}_deseq.tab
         done
+	rm $workpath/$outname/R_$j.${k}_deseq.tab
     done
 done
-
 ## merged bam files
 FILEA=$workpath/files.tab
 types=($(awk '{print $4}' $FILEA | uniq))

@@ -39,8 +39,10 @@ done
 
 ind1=$(qsub $out/scripts/generateStatistics.sh)
 a1=$(qsub -h $out/scripts/generateFiles.sh)
-
-
+b1=$(qsub -W depend=afterok:${a1} $out/scripts/mergeReplicates.sh)
+c1=$(qsub -W depend=afterok:${b1} $out/scripts/generateTables.sh)
+d1=$(qsub -W depend=afterok:${c1} $out/scripts/run_macs.sh)
+e1=$(qsub -W depend=afterok:${d1} $out/scripts/run_R_peaks.sh)
 
 #i=0
 #for ff in generateFiles generateStatistics; do
@@ -55,7 +57,7 @@ qrls ${a1}
 
 ## level b: ## run statistics on alignment files, run macs2
 
-#$(qsub -W depend=afterok:${a[0]} $out/mergeReplicates.sh)
+#$(qsub -W depend=afterok:${a1} $out/mergeReplicates.sh)
 #i=0
 #for ff in  run_statistics run_macs run_samtools_mult run_samtools_uniq getIS tableCov; do
 #    b[i]=$(qsub -W depend=afterok:${a[1]}:${a[0]} $out/$ff.sh )

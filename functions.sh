@@ -21,7 +21,8 @@ createHead() { local OPTIND;
 
     nrBJ=$(wc -l $file | awk '{print $1}') # simply the number of rows in files.tab
     nrPJ=$(awk '{print $3}' files.tab | grep sample | wc -l)
-    nrMJ=$(wc -l files_macs.tab | awk '{print $1}')
+    nrMJ=$(awk '{print $4}' files.tab | sort | uniq | wc -l )
+
 
     case $which in
     generateFiles) # generateFiles

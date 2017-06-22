@@ -48,7 +48,7 @@ txdb = TxDb.Athaliana.BioMart.plantsmart28
 ######################
 
 ## merge peaks 
-mergeClosePeaks=function(grange, length=100){
+mergeClosePeaks=function(grange, length=50){
   extended = grange
   start(extended)=start(extended)-length/2
   end(extended)=end(extended)+length/2
