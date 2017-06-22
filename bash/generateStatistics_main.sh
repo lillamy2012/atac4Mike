@@ -36,11 +36,12 @@ mkdir -p $TMPDIR
 
 ### make tmp folder
 mkdir -p ${workpath}/${tmp}
+mkdir -p ${workpath}/${outname}/results
 
 ###### MARKED DUPLICATES
 input=${alignpath}/${ALIGN}.bam
 output=${workpath}/${tmp}/${NAME}.marked_duplicates.bam
-output_keep=${workpath}/${outname}/${NAME}.marked_duplicates.bam
+output_keep=${workpath}/${outname}/results/${NAME}.marked_duplicates.bam
 
 if [ ! -f ${output} ];then
     java -Djava.io.tmpdir=$TMPDIR -jar $EBROOTPICARD/picard.jar MarkDuplicates I=${input}  O= ${output} M=${NAME}.dup_metrics.txt AS=true REMOVE_DUPLICATES=false TMP_DIR=$TMPDIR
@@ -56,7 +57,7 @@ samtools stats -c 0,2000,1 ${output} > ${output_keep}.stats.txt
 ## quality filter
 input=${output}
 output=${workpath}/${tmp}/${NAME}.marked_duplicates.filtered.bam
-output_keep=${workpath}/${outname}/${NAME}.marked_duplicates.filtered.bam
+output_keep=${workpath}/${outname}/results/${NAME}.marked_duplicates.filtered.bam
 
 if [ ! -f ${output} ];then
     echo "filter"
@@ -66,14 +67,14 @@ if [ ! -f ${output} ];then
     samtools flagstat ${output} > ${output_keep}.flagstat.txt
 fi
 
-samtools stats -c 0,2000,1 ${output} > ${output}.stats.txt
-samtools depth -a ${output} > ${output}.depth.txt
+samtools stats -c 0,2000,1 ${output} > ${output_keep}.stats.txt
+samtools depth -a ${output} > ${output_keep}.depth.txt
 
 ###### REMOVE DUPLICATES
 
 input=${output}
 output=${workpath}/${tmp}/${NAME}.uniq_filtered.bam
-output_keep=${workpath}/${outname}/${NAME}.uniq_filtered.bam
+output_keep=${workpath}/${outname}/results/${NAME}.uniq_filtered.bam
 
 if [ ! -f ${output} ];then
     echo "rm"
@@ -81,7 +82,7 @@ if [ ! -f ${output} ];then
 ## alignment statistics dup rm
     samtools flagstat ${output} > ${output_keep}.flagstat.txt
 fi
-samtools depth -a ${output} > ${output}.depth.txt
+samtools depth -a ${output} > ${output_keep}.depth.txt
 samtools stats -c 0,2000,1 ${output} > ${output_keep}.stats.txt
 
 

@@ -23,9 +23,11 @@ bashpath="bash/"
 
 # generatate PBS header for files
 
+mkdir -p $out/scripts
+
 for ff in generateFiles generateTables generateStatistics mergeReplicates run_macs run_statistics run_samtools_mult run_samtools_uniq getIS tableCov run_R_plots run_R_peaks count_reads_in_peakregions run_R_deseq; do
-    createHead -f files.tab -s setting.txt -o $(pwd)/$out -w $ff > $out/${ff}.sh
-    cat ${bashpath}${ff}_main.sh >> $out/${ff}.sh
+    createHead -f files.tab -s setting.txt -o $(pwd)/$out -w $ff > $out/scripts/${ff}.sh
+    cat ${bashpath}${ff}_main.sh >> $out/scripts/${ff}.sh
 done
 
 
@@ -35,14 +37,25 @@ done
 
 ## level a: ## generate all alignment files and tables
 
+ind1=$(qsub $out/scripts/generateStatistics.sh)
+a1=$(qsub -h $out/scripts/generateFiles.sh)
+
+
+
 #i=0
-#for ff in generateFiles generateTables; do
-#   	a[i]=$(qsub -h $out/${ff}.sh)
-	((i+=1))
+#for ff in generateFiles generateStatistics; do
+ #  	a[i]=$(qsub -h $out/scripts/{ff}.sh)
+#	((i+=1))
 #done
+
+qrls ${a1}
+
+
+####ae=$(qsub $out/generateStatistic.sh) ## only need to check in end that it's finished
 
 ## level b: ## run statistics on alignment files, run macs2
 
+#$(qsub -W depend=afterok:${a[0]} $out/mergeReplicates.sh)
 #i=0
 #for ff in  run_statistics run_macs run_samtools_mult run_samtools_uniq getIS tableCov; do
 #    b[i]=$(qsub -W depend=afterok:${a[1]}:${a[0]} $out/$ff.sh )
