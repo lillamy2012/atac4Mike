@@ -95,7 +95,12 @@ do
     done
 done
 
-
+## merged bam files
+types=$(awk '{print $4}' files.tab | uniq)
+for t in "${types}[@]"
+do
+    printf "%s\n" $workpath/$outname/$t/${t}.uniq_filtered.bam >> $workpath/files_macs.tab
+done
 
 
 
