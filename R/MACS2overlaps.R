@@ -1,5 +1,5 @@
 args = commandArgs(trailingOnly=TRUE)
-source("../R/functions.R")
+#source("../R/functions.R")
 
 if (length(args)==0){
   stop("Provide tab filewith files to read")
@@ -12,15 +12,8 @@ if (length(args)==0){
 ### in argument with files to use
 #input = "R_marked_duplicates.filtered.MACS2_noInput.tab"
 files=read.table(input)
-fileF=read.table("../files.tab",comment.char="")
-colors=defineColors(fileF)
-c_order=unique(colors$V4[-nrow(colors)])
-print(c_order)
-colors = droplevels(subset(colors,colors$V3=="sample"))
 files  = files[,1]
-files = checkInput(input=files,file=colors)
-fileF = colors[,-7]
-colors = colors$col
+#files = checkInput(input=files,file=colors)
 
 
 
@@ -71,57 +64,41 @@ createOverlapMat = function(peaks,tot){
   }
   return(allRegions)
 }
+writeGFF = function(GRanges,file){
+df = data.frame(seqnames(GRanges),rep("rtracklayer",length(GRanges)),"exon",start(GRanges),end(GRanges),rep(".",length(GRanges)),rep("+",length(GRanges)),rep(".",length(GRanges)),paste0(paste0("gene_id \"peak",1:length(GRanges)),"\";")
+    write.table(df,sep="\t",file=paste0(file,".gff"),row.names = FALSE,col.names = FALSE,quote = FALSE)
+}
 
 ## summarize overlaps want to be up to 3 groups
-summarizeOverlaps = function(allRegions,groups){
-  all_groups = apply(allRegions,1,paste,collapse=".")
-  nG = length(unique(groups))
-  print(nG)
-  gs = list()
-  for ( i in 1:nG){
-      print(which(groups==i)) ## this is why it breaks, 
-    gs[[i]] = apply(allRegions[, which(groups==i),drop=FALSE],1,paste,collapse=".")
-  }
-  groups=gs
-  return(list(all_groups,groups))
-}
-
-## approach 1 
-plotApp1 = function(sumList,cols){
-  all = table(sumList[[1]])
-  common = all["1.1.1.1"]
-  un1 = all["1.1.0.0"]+ all["1.1.1.0"]+  all["1.1.0.1"]
-  un2 = all["0.0.1.1"]+ all["0.1.1.1"]+  all["1.0.1.1"]
-  vp = draw.pairwise.venn(un1+common,un2+common,common,fill=cols)  #c("red", "green"))
-  grid.draw(vp)
-}
-
-## approach 2
-plotApp2 = function(sumList,cols){
-  in1 = grep("1",sumList[[2]][[1]])
-  in2 = grep("1",sumList[[2]][[2]])
-  common = length(intersect(in1,in2))
-  un1 = length(setdiff(in1,in2))
-  un2 = length(setdiff(in2,in1))
-  vp = draw.pairwise.venn(un1+common,un2+common,common,fill=cols)
-  grid.draw(vp)
-}
+#summarizeOverlaps = function(allRegions,groups){
+#  all_groups = apply(allRegions,1,paste,collapse=".")
+#  nG = length(unique(groups))
+#  print(nG)
+#  gs = list()
+#  for ( i in 1:nG){
+#      print(which(groups==i)) ## this is why it breaks,
+#    gs[[i]] = apply(allRegions[, which(groups==i),drop=FALSE],1,paste,collapse=".")
+#  }
+#  groups=gs
+#  return(list(all_groups,groups))
+#}
 
 ######################################
 
 
 ### define colors
 #colors = wes_palette(n=4, name="Zissou")[c(2:1,3:4)]
-cc =  wes_palette(n=5, name="Royal2")[c(3:5)]
+#cc =  wes_palette(n=5, name="Royal2")[c(3:5)]
 
 ### read in peaks, overlap, barplot 
 
-## read in function 
+## read in function ## write also gff for counting
 peaks=list()
 for (i in files){
     if(length(readLines(i))>0){
         peaks[[i]] = readPeakFile(i,header=F)
         peaks[[i]] = peaks[[i]][which(!seqnames(peaks[[i]])%in%c("mitochondria","chloroplast"))]
+        writeGFF(peaks[[i]],file=i)
     }
 }
 
@@ -131,10 +108,6 @@ print(head(tot_merge))
 overlaps = createOverlapMat(peaks,tot_merge)
 
 
-gr=findRepCondOrder(files,fileF)
-s_over = summarizeOverlaps(overlaps,gr$group)  
-
-print(head(overlaps))
 ## annotate
 
 tot_anno = annotatePeak(tot_merge, tssRegion=c(-900, 900),TxDb=txdb)
@@ -152,47 +125,3 @@ write.table(df,sep="\t",file=paste0(new,".gff"),row.names = FALSE,col.names = FA
 #write.table(as.data.frame(tot_anno), file = paste0(new,"_anno",".txt"),row.names = FALSE,quote=FALSE)
 write.table(tot_df_anno, file = paste0(new,"_anno",".csv"),row.names = FALSE,quote=FALSE,sep=";")
 
-for(i in 1:max(gr$group)){
-  pdf(paste(paste0(paste(new,"fig1",sep="_"),i),"pdf",sep="."))
-  plotReplicateVenn(s_over,v_colors=colors,gr=gr$group,group=i,cat=paste0("rep",gr$rep))
-  dev.off()
-  CairoPNG(paste(paste0(paste(new,"fig1",sep="_"),i),"png",sep="."))
-  plotReplicateVenn(s_over,v_colors=colors,gr=gr$group,group=i,cat=paste0("rep",gr$rep))
-  dev.off()
-
-  }
-
-## approcach 1 : common if in all, unique if both rep (1 or zero other)
-pdf(paste(new,"fig3.pdf",sep="_"))
-grid.newpage()
-nrR = table(gr$group)
-try(plotAppVenn(defineA(overlaps,gr$group,nrR),cc,c_order))
-dev.off()
-CairoPNG(paste(new,"fig3.png",sep="_"))
-grid.newpage()
-nrR = table(gr$group)
-try(plotAppVenn(defineA(overlaps,gr$group,nrR),cc,c_order))
-dev.off()
-## approcach 2 : common if in both , unique if only one
-
-pdf(paste(new,"fig4.pdf",sep="_"))
-grid.newpage() 
-try(plotAppVenn(defineA(overlaps,gr$group,rep(1,length(nrR))),cc,c_order))
-dev.off()
-CairoPNG(paste(new,"fig4.png",sep="_"))
-grid.newpage()
-try(plotAppVenn(defineA(overlaps,gr$group,rep(1,length(nrR))),cc,c_order))
-dev.off()
-
-
-rle_w=lapply(peaks, function(x) width(x))
-pdf(paste(new,"fig5.pdf",sep="_"))
-#boxplot(lapply(rle_w,log10),lwd=2,col=colors,ylab="log10(length)",xlab="",main="length")
-multidensity(lapply(rle_w,log10),lwd=3,col=colors,xlab="log10(length)",main="")
-dev.off()
-CairoPNG(paste(new,"fig5.png",sep="_"))
-multidensity(lapply(rle_w,log10),lwd=3,col=colors,xlab="log10(length)",main="")
-dev.off()
-
-
-#export.gff(tot_merge,"peakregions.gff")
