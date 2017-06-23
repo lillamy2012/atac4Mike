@@ -64,6 +64,9 @@ createHead() { local OPTIND;
     count_reads_in_peakregions)
         printf %"s\n" "#!/bin/bash" "#PBS -N count_reads_peaks" "#PBS -P berger_common" "#PBS -q workq" "#PBS -l walltime=05:00:00" "#PBS -e $out/count_reads_peaks_error_out" "#PBS -j eo" "#PBS -J 1-$nrBJ"
     ;;
+    count_reads_in_narrowpeaks)
+        printf %"s\n" "#!/bin/bash" "#PBS -N count_reads_narrowpeaks" "#PBS -P berger_common" "#PBS -q workq" "#PBS -l walltime=05:00:00" "#PBS -e $out/count_reads_narrowpeaks_error_out" "#PBS -j eo" "#PBS -J 1-$nrBJ"
+    ;;
     run_R_deseq)
         printf %"s\n" "#!/bin/bash" "#PBS -N run_R_deseq" "#PBS -P berger_common" "#PBS -q workq" "#PBS -l walltime=00:10:00" "#PBS -e $out/run_R_deseq_error_out" "#PBS -j eo"
 ;;

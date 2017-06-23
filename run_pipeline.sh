@@ -25,7 +25,7 @@ bashpath="bash/"
 
 mkdir -p $out/scripts
 
-for ff in generateFiles generateTables generateStatistics mergeReplicates run_macs run_statistics run_samtools_mult run_samtools_uniq getIS tableCov run_R_plots run_R_peaks count_reads_in_peakregions run_R_deseq; do
+for ff in generateFiles generateTables generateStatistics mergeReplicates run_macs run_statistics run_samtools_mult run_samtools_uniq getIS tableCov run_R_plots run_R_peaks count_reads_in_peakregions run_R_deseq count_reads_in_narrowpeaks; do
     createHead -f files.tab -s setting.txt -o $(pwd)/$out -w $ff > $out/scripts/${ff}.sh
     cat ${bashpath}${ff}_main.sh >> $out/scripts/${ff}.sh
 done
@@ -37,12 +37,12 @@ done
 
 ## level a: ## generate all alignment files and tables
 
-ind1=$(qsub $out/scripts/generateStatistics.sh)
+#ind1=$(qsub $out/scripts/generateStatistics.sh)
 a1=$(qsub -h $out/scripts/generateFiles.sh)
-b1=$(qsub -W depend=afterok:${a1} $out/scripts/mergeReplicates.sh)
-c1=$(qsub -W depend=afterok:${b1} $out/scripts/generateTables.sh)
-d1=$(qsub -W depend=afterok:${c1} $out/scripts/run_macs.sh)
-e1=$(qsub -W depend=afterok:${d1} $out/scripts/run_R_peaks.sh)
+#b1=$(qsub -W depend=afterok:${a1} $out/scripts/mergeReplicates.sh)
+#c1=$(qsub -W depend=afterok:${b1} $out/scripts/generateTables.sh)
+#d1=$(qsub -W depend=afterok:${c1} $out/scripts/run_macs.sh)
+#e1=$(qsub -W depend=afterok:${d1} $out/scripts/run_R_peaks.sh)
 
 #i=0
 #for ff in generateFiles generateStatistics; do
