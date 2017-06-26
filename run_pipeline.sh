@@ -38,7 +38,7 @@ done
 ## level a: ## generate all alignment files and tables
 
 #ind1=$(qsub $out/scripts/generateStatistics.sh)
-a1=$(qsub -h $out/scripts/generateFiles.sh)
+#a1=$(qsub -h $out/scripts/generateFiles.sh)
 #b1=$(qsub -W depend=afterok:${a1} $out/scripts/mergeReplicates.sh)
 #c1=$(qsub -W depend=afterok:${b1} $out/scripts/generateTables.sh)
 #d1=$(qsub -W depend=afterok:${c1} $out/scripts/run_macs.sh)
@@ -50,7 +50,7 @@ a1=$(qsub -h $out/scripts/generateFiles.sh)
 #	((i+=1))
 #done
 
-qrls ${a1}
+#qrls ${a1}
 
 
 ####ae=$(qsub $out/generateStatistic.sh) ## only need to check in end that it's finished

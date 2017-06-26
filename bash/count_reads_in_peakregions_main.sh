@@ -17,6 +17,7 @@ workpath=$(grep workpath $settingsfile | awk '{print $2}')
 bampath=$(grep bampath $settingsfile | awk '{print $2}')
 index=$(grep index $settingsfile | awk '{print $2}')
 alignpath=$(grep alignpath $settingsfile | awk '{print $2}')
+type=$(sed "${PARAM_IDX}q;d" $PARAM_FILE | awk '{print $4}')
 #subn=$(grep subn $settingsfile | awk '{print $2}')
 
 echo "NAME: $NAME"
@@ -32,7 +33,7 @@ peaktype=( "MACS2_paired" "MACS2_noInput" )
 for j in "${peaktype[@]}"
 do
     echo $j
-    gff=${filetype}_$j.gff
+    gff=$j.gff
     echo $gff
 
 # === START ===
@@ -40,7 +41,7 @@ do
     if [ ! -f ${workpath}/$out/$NAME.${filetype}_${j}_counts.tab ];
     then
         echo "htseq"
-        htseq-count -f bam -s no ${workpath}/$out/$NAME.$filetype.bam ${workpath}/$out/${gff} > ${workpath}/$out/$NAME.${filetype}_${j}_counts.tab
+        htseq-count -f bam -s no ${workpath}/$out/$type/$NAME.$filetype.bam ${workpath}/$out/${gff} > ${workpath}/$out/$NAME.${filetype}_${j}_counts.tab
     fi
 done
 
