@@ -73,7 +73,9 @@ createHead() { local OPTIND;
    calculate_tpm_in_peakregions)
         printf %"s\n" "#!/bin/bash" "#PBS -N calc_tpm_peaks" "#PBS -P berger_common" "#PBS -q workq" "#PBS -l walltime=00:10:00" "#PBS -e $out/calc_tpm_peaks_error_out" "#PBS -j eo" "#PBS -J 1-$nrBJ"
     ;;
-
+   calculate_tpm_in_narrowpeaks)
+        printf %"s\n" "#!/bin/bash" "#PBS -N calc_tpm_narrowpeaks" "#PBS -P berger_common" "#PBS -q workq" "#PBS -l walltime=00:10:00" "#PBS -e $out/calc_tpm_narrowpeaks_error_out" "#PBS -j eo" "#PBS -J 1-$nrBJ"
+    ;;
 
 
 
