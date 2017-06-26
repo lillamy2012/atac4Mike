@@ -10,22 +10,22 @@ type=$(sed "${PARAM_IDX}q;d" $PARAM_FILE | awk '{print $4}')
 NAME=$(sed "${PARAM_IDX}q;d" $PARAM_FILE | awk '{print $1}')
 ALIGN=$(sed "${PARAM_IDX}q;d" $PARAM_FILE | awk '{print $2}')
 workpath=$(grep workpath $settingsfile | awk '{print $2}')
-PATH=${workpath}/${outname}/${type}
+TOPATH=${workpath}/${outname}/${type}
 
 filetype="uniq_filtered"
 peaktype=( "MACS2_paired" "MACS2_noInput" )
 
 for j in "${peaktype[@]}"
 do
-    gff=${PATH}/${type}.${filetype}.bam_${j}_peaks.narrowPeak.gff
+    gff=${TOPATH}/${type}.${filetype}.bam_${j}_peaks.narrowPeak.gff
 echo $gff
-    counts=${PATH}/$NAME.${filetype}_${j}_counts.tab 
+    counts=${TOPATH}/$NAME.${j}_peaks.narrowPeak_counts.tab 
 echo $counts
-    out=${PATH}/$NAME.${j}_length.tab
+    out=${TOPATH}/$NAME.${j}_length.tab
 echo $out
-    joined=${PATH}/$NAME.${j}_joined.tab
+    joined=${TOPATH}/$NAME.${j}_joined.tab
 echo $joined
-    tpm=${PATH}/$NAME.${j}_tpm.tab
+    tpm=${TOPATH}/$NAME.${j}_tpm.tab
 echo $tmp
 
     awk '{ $11 = $5 - $4 } { print $10 "\t" $11} ' $gff | tr -d '""' | tr -d ";" > $out

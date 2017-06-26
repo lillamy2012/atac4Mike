@@ -25,7 +25,7 @@ bashpath="bash/"
 
 mkdir -p $out/scripts
 
-for ff in calculate_tpm_in_peakregions generateFiles generateTables generateStatistics mergeReplicates run_macs run_statistics run_samtools_mult run_samtools_uniq getIS tableCov run_R_plots run_R_peaks count_reads_in_peakregions run_R_deseq count_reads_in_narrowpeaks; do
+for ff in calculate_tpm_in_peakregions calculate_tpm_in_narrowpeak generateFiles generateTables generateStatistics mergeReplicates run_macs run_statistics run_samtools_mult run_samtools_uniq getIS tableCov run_R_plots run_R_peaks count_reads_in_peakregions run_R_deseq count_reads_in_narrowpeaks; do
     createHead -f files.tab -s setting.txt -o $(pwd)/$out -w $ff > $out/scripts/${ff}.sh
     cat ${bashpath}${ff}_main.sh >> $out/scripts/${ff}.sh
 done
@@ -37,12 +37,16 @@ done
 
 ## level a: ## generate all alignment files and tables
 
-#ind1=$(qsub $out/scripts/generateStatistics.sh)
-#a1=$(qsub -h $out/scripts/generateFiles.sh)
-#b1=$(qsub -W depend=afterok:${a1} $out/scripts/mergeReplicates.sh)
-#c1=$(qsub -W depend=afterok:${b1} $out/scripts/generateTables.sh)
-#d1=$(qsub -W depend=afterok:${c1} $out/scripts/run_macs.sh)
-#e1=$(qsub -W depend=afterok:${d1} $out/scripts/run_R_peaks.sh)
+ind1=$(qsub $out/scripts/generateStatistics.sh)
+a1=$(qsub -h $out/scripts/generateFiles.sh)
+b1=$(qsub -W depend=afterok:${a1} $out/scripts/mergeReplicates.sh)
+c1=$(qsub -W depend=afterok:${b1} $out/scripts/generateTables.sh)
+d1=$(qsub -W depend=afterok:${c1} $out/scripts/run_macs.sh)
+e1=$(qsub -W depend=afterok:${d1} $out/scripts/run_R_peaks.sh)
+f1=$(qsub -W depend=afterok:${e1} $out/scripts/count_reads_in_narrowpeaks.sh)
+f2=$(qsub -W depend=afterok:${e1} $out/scripts/count_reads_in_peakregions.sh)
+g1=$(qsub -W depend=afterok:${f1} $out/scripts/calculate_tpm_in_narrowpeak.sh)
+g2=$(qsub -W depend=afterok:${f2} $out/scripts/calculate_tpm_in_peakregions.sh) 
 
 #i=0
 #for ff in generateFiles generateStatistics; do
@@ -50,7 +54,7 @@ done
 #	((i+=1))
 #done
 
-#qrls ${a1}
+qrls ${a1}
 
 
 ####ae=$(qsub $out/generateStatistic.sh) ## only need to check in end that it's finished
