@@ -70,6 +70,9 @@ createHead() { local OPTIND;
     run_R_deseq)
         printf %"s\n" "#!/bin/bash" "#PBS -N run_R_deseq" "#PBS -P berger_common" "#PBS -q workq" "#PBS -l walltime=00:10:00" "#PBS -e $out/run_R_deseq_error_out" "#PBS -j eo"
 ;;
+   calculate_tpm_in_peakregions)
+        printf %"s\n" "#!/bin/bash" "#PBS -N calc_tpm_peaks" "#PBS -P berger_common" "#PBS -q workq" "#PBS -l walltime=00:10:00" "#PBS -e $out/calc_tpm_peaks_error_out" "#PBS -j eo" "#PBS -J 1-$nrBJ"
+    ;;
 
 
 

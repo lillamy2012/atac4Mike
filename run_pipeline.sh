@@ -25,7 +25,7 @@ bashpath="bash/"
 
 mkdir -p $out/scripts
 
-for ff in generateFiles generateTables generateStatistics mergeReplicates run_macs run_statistics run_samtools_mult run_samtools_uniq getIS tableCov run_R_plots run_R_peaks count_reads_in_peakregions run_R_deseq count_reads_in_narrowpeaks; do
+for ff in calculate_tpm_in_peakregions generateFiles generateTables generateStatistics mergeReplicates run_macs run_statistics run_samtools_mult run_samtools_uniq getIS tableCov run_R_plots run_R_peaks count_reads_in_peakregions run_R_deseq count_reads_in_narrowpeaks; do
     createHead -f files.tab -s setting.txt -o $(pwd)/$out -w $ff > $out/scripts/${ff}.sh
     cat ${bashpath}${ff}_main.sh >> $out/scripts/${ff}.sh
 done
