@@ -15,7 +15,7 @@ filetypes=( uniq_filtered.bam )
 
 for f in "${filetypes[@]}"
 do
-awk '{print $3}' ${workpath}/$out/$NAME.$f.depth.txt | python $PBS_O_WORKDIR/python/my_counter.py > ${workpath}/$out/$NAME.$f.depth.table.tab
+awk '{print $3}' ${workpath}/$out/results/$NAME.$f.depth.txt | python $PBS_O_WORKDIR/python/my_counter.py > ${workpath}/$out/$NAME.$f.depth.table.tab
 done
 
 

@@ -14,9 +14,8 @@ workpath=$(grep workpath $settingsfile | awk '{print $2}')
 bampath=$(grep bampath $settingsfile | awk '{print $2}')
 index=$(grep index $settingsfile | awk '{print $2}')
 alignpath=$(grep alignpath $settingsfile | awk '{print $2}')
-#subn=$(grep subn $settingsfile | awk '{print $2}')
 out=$(grep outname $settingsfile | awk '{print $2}')
-
+tmp=$(grep tmp_path $settingsfile | awk '{print $2}')
 
 echo "NAME: $NAME"
 echo "workpath: $workpath"
@@ -36,6 +35,6 @@ for f in "${filetypes[@]}"
 do
 ## multi (proper only)
 echo $NAME.$f
-samtools view -f 66 ${workpath}/$out/$NAME.$f | awk '{print $9}' | python  $PBS_O_WORKDIR/python/my_counter.py > ${workpath}/$out/$NAME.$f.IS.tab
+samtools view -f 66 ${workpath}/$tmp/$NAME.$f | awk '{print $9}' | python  $PBS_O_WORKDIR/python/my_counter.py > ${workpath}/$out/$NAME.$f.IS.tab
 done
 

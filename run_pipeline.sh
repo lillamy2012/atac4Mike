@@ -2,60 +2,61 @@
 
 
 . functions.sh
-## read in 3 things
-# 1, settings file, 2, files file 3, output location, overwrite=FALSE, steps to run
-
-# variables needed #jobs, location for output/error, #conditions, colors...,
-
-#step 0 read in arg
-
 
 #step 1
-
-#create output folder
+#create output folder, scripts folder  and set path to bash files
 
 out=$(grep outname setting.txt | awk '{print $2}')
 mkdir -p $out
-
 bashpath="bash/"
-
-#step 2
-
-# generatate PBS header for files
-
 mkdir -p $out/scripts
 
-for ff in calculate_tpm_in_peakregions calculate_tpm_in_narrowpeak generateFiles generateTables generateStatistics mergeReplicates run_macs run_statistics run_samtools_mult run_samtools_uniq getIS tableCov run_R_plots run_R_peaks count_reads_in_peakregions run_R_deseq count_reads_in_narrowpeaks; do
+#step 2
+# generatate PBS header for files
+
+for ff in calculate_tpm_in_peakregions calculate_tpm_in_narrowpeak generateFiles generateTables generateStatistics mergeReplicates run_macs run_statistics run_samtools_mult run_samtools_uniq getIS tableCov run_R_plots run_R_peaks count_reads_in_peakregions run_R_deseq count_reads_in_narrowpeaks; 
+do
     createHead -f files.tab -s setting.txt -o $(pwd)/$out -w $ff > $out/scripts/${ff}.sh
     cat ${bashpath}${ff}_main.sh >> $out/scripts/${ff}.sh
 done
 
-
+r="no"
 #step 3
-
 # setup submission
+# main work
+if [ "${r}" = "yes" ]; then
+echo "running" 
+a1=$(qsub -h $out/scripts/generateFiles.sh) # create the uniq filtered bam files
+b1=$(qsub -W depend=afterok:${a1} $out/scripts/mergeReplicates.sh) # merge bam files for replicates, depends on a1
+c1=$(qsub -W depend=afterok:${b1} $out/scripts/generateTables.sh) # generate file tables, depends on the merging of replicates (only!)
+d1=$(qsub -W depend=afterok:${c1} $out/scripts/run_macs.sh) # run macs on merged bam files, depends on a1, b1 and c1!
+e1=$(qsub -W depend=afterok:${d1} $out/scripts/run_R_peaks.sh) # merge peaks , generate gff (both merged and for each narrow)
+#counts and tpm 
+f1=$(qsub -W depend=afterok:${e1} $out/scripts/count_reads_in_narrowpeaks.sh) # narrow peaks FIXME count in all peaks!
+g1=$(qsub -W depend=afterok:${f1} $out/scripts/calculate_tpm_in_narrowpeak.sh)
+f2=$(qsub -W depend=afterok:${e1} $out/scripts/count_reads_in_peakregions.sh) # in the merged peaks
+g2=$(qsub -W depend=afterok:${f2} $out/scripts/calculate_tpm_in_peakregions.sh)
 
-## level a: ## generate all alignment files and tables
+#deseq on merged peaks
+g3=$(qsub -W depend=afterok:${f2} $out/scripts/run_R_deseq.sh)
 
-#ind1=$(qsub $out/scripts/generateStatistics.sh)
-#a1=$(qsub -h $out/scripts/generateFiles.sh)
-#b1=$(qsub -W depend=afterok:${a1} $out/scripts/mergeReplicates.sh)
-#c1=$(qsub -W depend=afterok:${b1} $out/scripts/generateTables.sh)
-qsub $out/scripts/generateTables.sh 
-#d1=$(qsub -W depend=afterok:${c1} $out/scripts/run_macs.sh)
-#e1=$(qsub -W depend=afterok:${d1} $out/scripts/run_R_peaks.sh)
-#f1=$(qsub -W depend=afterok:${e1} $out/scripts/count_reads_in_narrowpeaks.sh)
-#f2=$(qsub -W depend=afterok:${e1} $out/scripts/count_reads_in_peakregions.sh)
-#g1=$(qsub -W depend=afterok:${f1} $out/scripts/calculate_tpm_in_narrowpeak.sh)
-#g2=$(qsub -W depend=afterok:${f2} $out/scripts/calculate_tpm_in_peakregions.sh) 
+#combine tables (add tpm)
+#clean up script
 
-#i=0
-#for ff in generateFiles generateStatistics; do
- #  	a[i]=$(qsub -h $out/scripts/{ff}.sh)
-#	((i+=1))
-#done
+#start!
+qrls ${a1}
 
-#qrls ${a1}
+fi
+
+# statistics:
+st1=$(qsub $out/scripts/generateStatistics.sh)
+i=0
+for ff in  run_statistics run_macs run_samtools_mult run_samtools_uniq getIS tableCov;
+ do
+  st2[i]=$(qsub -W depend=afterok:${st1} $out/scripts/$ff.sh )
+ ((i+=1))
+done
+
 
 
 ####ae=$(qsub $out/generateStatistic.sh) ## only need to check in end that it's finished

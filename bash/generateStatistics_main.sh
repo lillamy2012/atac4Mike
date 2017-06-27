@@ -47,11 +47,9 @@ if [ ! -f ${output} ];then
     java -Djava.io.tmpdir=$TMPDIR -jar $EBROOTPICARD/picard.jar MarkDuplicates I=${input}  O= ${output} M=${NAME}.dup_metrics.txt AS=true REMOVE_DUPLICATES=false TMP_DIR=$TMPDIR
 ## alignment statistics with marked duplicates
     samtools flagstat ${output} > ${output_keep}.flagstat.txt
+    samtools depth -a ${output} > ${output_keep}.depth.txt
+    samtools stats -c 0,2000,1 ${output} > ${output_keep}.stats.txt
 fi
-
-samtools depth -a ${output} > ${output_keep}.depth.txt
-samtools stats -c 0,2000,1 ${output} > ${output_keep}.stats.txt
-
 ####### QUALITY FILTER
 
 ## quality filter
@@ -65,11 +63,9 @@ if [ ! -f ${output} ];then
     samtools view -bSq $quality ${input}> ${output}
     ## alignment statistics filtered
     samtools flagstat ${output} > ${output_keep}.flagstat.txt
+    samtools stats -c 0,2000,1 ${output} > ${output_keep}.stats.txt
+    samtools depth -a ${output} > ${output_keep}.depth.txt
 fi
-
-samtools stats -c 0,2000,1 ${output} > ${output_keep}.stats.txt
-samtools depth -a ${output} > ${output_keep}.depth.txt
-
 ###### REMOVE DUPLICATES
 
 input=${output}
@@ -81,9 +77,8 @@ if [ ! -f ${output} ];then
     java -Djava.io.tmpdir=$TMPDIR -jar $EBROOTPICARD/picard.jar MarkDuplicates I=${input}  O= ${output} M=${NAME}_filtered.dup_metrics.txt AS=true REMOVE_DUPLICATES=true TMP_DIR=$TMPDIR
 ## alignment statistics dup rm
     samtools flagstat ${output} > ${output_keep}.flagstat.txt
+    samtools depth -a ${output} > ${output_keep}.depth.txt
+    samtools stats -c 0,2000,1 ${output} > ${output_keep}.stats.txt
 fi
-samtools depth -a ${output} > ${output_keep}.depth.txt
-samtools stats -c 0,2000,1 ${output} > ${output_keep}.stats.txt
-
 
 

@@ -15,9 +15,8 @@ workpath=$(grep workpath $settingsfile | awk '{print $2}')
 bampath=$(grep bampath $settingsfile | awk '{print $2}')
 index=$(grep index $settingsfile | awk '{print $2}')
 alignpath=$(grep alignpath $settingsfile | awk '{print $2}')
-#subn=$(grep subn $settingsfile | awk '{print $2}')
 out=$(grep outname $settingsfile | awk '{print $2}')
-
+tmp=$(grep tmp_path $settingsfile | awk '{print $2}')
 
 echo "NAME: $NAME"
 echo "workpath: $workpath"
@@ -37,6 +36,6 @@ if [ ! -f ${workpath}/$out/$NAME.uinq_stat.tab ]; then
     do
     ## multi (proper only)
         echo $NAME.$f
-        samtools view -f 66  ${workpath}/$out/$NAME.$f |grep -v "XS:i"|grep -E "@|AS:i" | wc -l >> ${workpath}/$out/$NAME.uniq_stat.tab
+        samtools view -f 66  ${workpath}/$tmp/$NAME.$f |grep -v "XS:i"|grep -E "@|AS:i" | wc -l >> ${workpath}/$out/$NAME.uniq_stat.tab
     done
 fi

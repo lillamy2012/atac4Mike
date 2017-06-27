@@ -28,7 +28,7 @@ do
     for f in "${filetypes[@]}"
     do
         echo $f
-        bash ${workpath}/$bashpath/collectStats.sh ${workpath}/$out/$NAME.$f.stats.txt > ${workpath}/$out/$NAME.$f.numbers.tab
+        bash ${workpath}/$bashpath/collectStats.sh ${workpath}/$out/results/$NAME.$f.stats.txt > ${workpath}/$out/$NAME.$f.numbers.tab
     done
 done
 
