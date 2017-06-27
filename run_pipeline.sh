@@ -51,25 +51,15 @@ fi
 # statistics:
 st1=$(qsub $out/scripts/generateStatistics.sh)
 i=0
-for ff in  run_statistics run_macs run_samtools_mult run_samtools_uniq getIS tableCov;
+for ff in  run_statistics run_samtools_mult run_samtools_uniq getIS tableCov;
  do
   st2[i]=$(qsub -W depend=afterok:${st1} $out/scripts/$ff.sh )
  ((i+=1))
 done
 
+st3=$(qsub -W depend=afterok:${st2[0]}:${st2[1]}:${st2[2]}:${st2[3]}:${st2[4]} $out/scripts/run_R_plots.sh)
 
 
-####ae=$(qsub $out/generateStatistic.sh) ## only need to check in end that it's finished
-
-## level b: ## run statistics on alignment files, run macs2
-
-#$(qsub -W depend=afterok:${a1} $out/mergeReplicates.sh)
-#i=0
-#for ff in  run_statistics run_macs run_samtools_mult run_samtools_uniq getIS tableCov; do
-#    b[i]=$(qsub -W depend=afterok:${a[1]}:${a[0]} $out/$ff.sh )
-#b[i]=$(qsub -h $ff.sh )
-#	((i+=1))
-#done
 
 
 ## level c ## rplots
