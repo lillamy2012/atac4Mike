@@ -82,27 +82,24 @@ done
 ## deseq2 files
 ## merged macs output
 
-de_filetypes=( uniq_filtered )
 de_table=( "MACS2_paired" "MACS2_noInput")
 
-for j in "${de_filetypes[@]}"
-do
-    for k in "${de_table[@]}"
-    do
-        echo R_$j.$k.tab
-        if [ -f $workpath/$outname/R_$j.${k}_deseq.tab ];then
+for k in "${de_table[@]}"
+   do
+      if [ -f $workpath/$outname/R_${k}_deseq.tab ];then
             echo "rm"
-            rm $workpath/$outname/R_$j.${k}_deseq.tab
+            rm $workpath/$outname/R_${k}_deseq.tab
         fi
         for i in "${names[@]}"
         do
             echo $i
-            printf "%s\t" ${i}.${j}_${k}_counts.tab $(grep ^$i $PARAM_FILE | awk '{print $4}') $(grep ^$i $PARAM_FILE | awk '{print $3}') >> $workpath/$outname/R_$j.${k}_deseq.tab
-            printf "\n" >>  $workpath/$outname/R_$j.${k}_deseq.tab
+	type=$(grep ^$i $PARAM_FILE | awk '{print $4}')
+            printf "%s\t" ${i}.uniq_filtered_${k}_counts.tab $type $(grep ^$i $PARAM_FILE | awk '{print $3}') >> $workpath/$outname/R_${k}_deseq.tab
+            printf "\n" >>  $workpath/$outname/R_${k}_deseq.tab
         done
-	 $workpath/$outname/R_$j.${k}_deseq.tab
-    done
+	 $workpath/$outname/R.${k}_deseq.tab
 done
+
 
 
 

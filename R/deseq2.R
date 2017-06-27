@@ -145,13 +145,13 @@ new = paste(lname[!lname%in%exclude],collapse = "_")
 setup=read.table(input, comment.char="")
 
 print(setup)
-files  = setup[,1]
+files  = setup[,1] #need new path
 
 nn = gsub("_deseq","",new)
 annoF = paste(nn,"anno.csv",sep="_")
 #"uniq_filtered_MACS2_withInput_anno.csv"
 print(annoF)
-anno = read.table(annoF,sep=";",header=T,comment.char="",quote = "")
+anno = read.table(annoF,sep=";",header=T,comment.char="",quote = "") #new name ("MACS2_noInput_anno.csv")
 rownames(anno)=paste0("peak",1:nrow(anno))
 
 ofInt = c("seqnames", "start", "end", "width", "annotation", "geneId" , "transcriptId" , "distanceToTSS")
