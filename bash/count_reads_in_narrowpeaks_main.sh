@@ -15,39 +15,31 @@ outname=$(grep outname $settingsfile | awk '{print $2}')
 NAME=$(sed "${PARAM_IDX}q;d" $PARAM_FILE | awk '{print $1}')
 ALIGN=$(sed "${PARAM_IDX}q;d" $PARAM_FILE | awk '{print $2}')
 workpath=$(grep workpath $settingsfile | awk '{print $2}')
-bampath=$(grep bampath $settingsfile | awk '{print $2}')
-index=$(grep index $settingsfile | awk '{print $2}')
-alignpath=$(grep alignpath $settingsfile | awk '{print $2}')
-#subn=$(grep subn $settingsfile | awk '{print $2}')
 type=$(sed "${PARAM_IDX}q;d" $PARAM_FILE | awk '{print $4}')
-FULLPATH=${workpath}/${outname}/${type}/${type}.uniq_filtered.bam
+#iPEAKPATH=${workpath}/${outname}/macs_results
 
 echo "NAME: $NAME"
 echo "workpath: $workpath"
-echo "bampath: $bampath"
-echo "index: $index"
 echo "ALIGN: $ALIGN"
-echo $(pwd)
-echo $FULLPATH
 
 filetype=uniq_filtered
 peaktype=( "MACS2_paired" "MACS2_noInput" )
-path="${FULLPATH%/*}"
-filename="${FULLPATH##*/}"
 
+#filename="${FULLPATH##*/}"
+
+mkdir -p ${workpath}/${outname}/counts
 
 for j in "${peaktype[@]}"
 do
-    echo ${path}/$NAME.$filetype_${j}_peaks.narrowPeak_counts.tab
-    gff=${FULLPATH}_${j}_peaks.narrowPeak.gff
+    gff=${workpath}/${outname}/${type}.${filetype}.bam_${j}_peaks.narrowPeak.gff
     echo $gff
 
 # === START ===
 
-    if [ ! -f ${FULLPATH}_${j}_peaks.narrowPeak_counts.tab ];
+    if [ ! -f $workpath/${outname}/counts/${NAME}_${j}_peaks.narrowPeak_counts.tab ];
     then
         echo "htseq"
-        htseq-count -f bam -s no ${path}/$NAME.$filetype.bam ${gff} > ${path}/$NAME.$filetype_${j}_peaks.narrowPeak_counts.tab
+        htseq-count -f bam -s no ${workpath}/${outname}/${type}/$NAME.$filetype.bam ${gff} > ${workpath}/${outname}/counts/${NAME}_${j}_peaks.narrowPeak_counts.tab
     fi
 done
 

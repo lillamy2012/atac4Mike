@@ -20,6 +20,5 @@ do
     echo $f
     Rscript --vanilla $PBS_O_WORKDIR/R/deseq2.R $f
 done
-mv *.pdf plots/
-mv *.png plots/
+
 

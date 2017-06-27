@@ -97,7 +97,6 @@ for k in "${de_table[@]}"
             printf "%s\t" ${i}.uniq_filtered_${k}_counts.tab $type $(grep ^$i $PARAM_FILE | awk '{print $3}') >> $workpath/$outname/R_${k}_deseq.tab
             printf "\n" >>  $workpath/$outname/R_${k}_deseq.tab
         done
-	 $workpath/$outname/R.${k}_deseq.tab
 done
 
 
@@ -131,7 +130,7 @@ do
         for t in "${types[@]}"
         do
             echo $t
-                printf "%s\n" $workpath/$outname/$t/${t}.uniq_filtered.bam_${k}_peaks.narrowPeak >> $workpath/$outname/R_$k.tab
+                printf "%s\n" $workpath/$outname/macs_results/${t}.uniq_filtered.bam_${k}_peaks.narrowPeak >> $workpath/$outname/R_$k.tab
         done
 done
 

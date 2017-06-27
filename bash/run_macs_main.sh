@@ -24,6 +24,8 @@ echo "workpath: $workpath"
 path="${FULLNAME%/*}"
 filename="${FULLNAME##*/}"
 
+macspath=${workpath}/${outname}/macs_results
+mkdir -p $macspath
 
 # === START ===
 ## This script starts with a aligned and sorted bam file
@@ -36,8 +38,8 @@ mkdir -p $TMPDIR
 
 
 if [ ! -f ${FULLNAME}_MACS2.done ]; then 
-	 macs2 callpeak -t $FULLNAME -g 1.2e8 -n ${filename}_MACS2_noInput --outdir ${path} --nomodel --shift -100 --extsize 200 -B -q 0.01
-         macs2 callpeak -t $FULLNAME -g 1.2e8 -n ${filename}_MACS2_paired  --outdir ${path}  -B -q 0.01 -f BAMPE  
+	 macs2 callpeak -t $FULLNAME -g 1.2e8 -n ${filename}_MACS2_noInput --outdir ${macspath} --nomodel --shift -100 --extsize 200 -B -q 0.01
+         macs2 callpeak -t $FULLNAME -g 1.2e8 -n ${filename}_MACS2_paired  --outdir ${macspath}  -B -q 0.01 -f BAMPE  
 
 	 touch ${FULLNAME}_MACS2.done
 fi

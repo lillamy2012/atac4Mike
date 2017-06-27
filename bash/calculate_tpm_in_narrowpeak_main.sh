@@ -10,14 +10,16 @@ type=$(sed "${PARAM_IDX}q;d" $PARAM_FILE | awk '{print $4}')
 NAME=$(sed "${PARAM_IDX}q;d" $PARAM_FILE | awk '{print $1}')
 ALIGN=$(sed "${PARAM_IDX}q;d" $PARAM_FILE | awk '{print $2}')
 workpath=$(grep workpath $settingsfile | awk '{print $2}')
-TOPATH=${workpath}/${outname}/${type}
+TOPATH=${workpath}/${outname}/counts
 
 filetype="uniq_filtered"
 peaktype=( "MACS2_paired" "MACS2_noInput" )
 
+mkdir -p ${workpath}/${outname}/tpm
+
 for j in "${peaktype[@]}"
 do
-    gff=${TOPATH}/${type}.${filetype}.bam_${j}_peaks.narrowPeak.gff
+    gff=${workpath}/${outname}/${type}.${filetype}.bam_${j}_peaks.narrowPeak.gff
 echo $gff
     counts=${TOPATH}/$NAME.${j}_peaks.narrowPeak_counts.tab 
 echo $counts
@@ -35,5 +37,7 @@ echo $tmp
     total=$(awk 'BEGIN{ total=0 } { total=total+$4 } END{ printf total }' $joined)
 	echo $total
     awk -v total=$total '{ print $1 "\t" 1000000*$4/total }' $joined > $tpm
-
+rm $out
+rm $joined
+mv $tpm ${workpath}/${outname}/tpm
 done

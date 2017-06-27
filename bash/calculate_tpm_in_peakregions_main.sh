@@ -33,5 +33,6 @@ echo $tmp
     total=$(awk 'BEGIN{ total=0 } { total=total+$4 } END{ printf total }' $joined)
 	echo $total
     awk -v total=$total '{ print $1 "\t" 1000000*$4/total }' $joined > $tpm
-
+rm $out
+rm $joined
 done

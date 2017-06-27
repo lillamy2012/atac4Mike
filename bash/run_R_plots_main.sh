@@ -36,5 +36,3 @@ do
     Rscript --vanilla $PBS_O_WORKDIR/R/analyseCov.R $f
 done
 
-mv *.pdf plots
-mv *.png plots

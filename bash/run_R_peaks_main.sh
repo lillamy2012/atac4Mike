@@ -9,9 +9,6 @@ module load Python/2.7.11-intel-2016a
 settingsfile=$PBS_O_WORKDIR/setting.txt
 workpath=$(grep workpath $settingsfile | awk '{print $2}')
 out=$(grep outname $settingsfile | awk '{print $2}')
-mkdir -p $workpath/$out/plots
-mkdir -p $workpath/$out/gff
-mkdir -p $workpath/$out/result_files
 
 cd $workpath/$out
 
@@ -22,7 +19,5 @@ do
     echo $f
     Rscript --vanilla $PBS_O_WORKDIR/R/MACS2overlaps.R $f
 done
-mv *.pdf plots
-mv *png plots
-mv *.gff gff
-mv *.csv result_files
+
+mv ./macs_results/*.gff .
