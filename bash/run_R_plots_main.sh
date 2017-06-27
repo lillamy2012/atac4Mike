@@ -9,6 +9,7 @@ module load Python/2.7.11-intel-2016a
 settingsfile=$PBS_O_WORKDIR/setting.txt
 workpath=$(grep workpath $settingsfile | awk '{print $2}')
 out=$(grep outname $settingsfile | awk '{print $2}')
+mkdir -p $workpath/$out/plots
 cd $workpath/$out
 
 
@@ -35,3 +36,5 @@ do
     Rscript --vanilla $PBS_O_WORKDIR/R/analyseCov.R $f
 done
 
+mv *.pdf plots
+mv *.png plots

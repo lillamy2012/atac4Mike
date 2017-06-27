@@ -9,8 +9,11 @@ module load Python/2.7.11-intel-2016a
 settingsfile=$PBS_O_WORKDIR/setting.txt
 workpath=$(grep workpath $settingsfile | awk '{print $2}')
 out=$(grep outname $settingsfile | awk '{print $2}')
-cd $workpath/$out
+mkdir -p $workpath/$out/plots
+mkdir -p $workpath/$out/gff
+mkdir -p $workpath/$out/result_files
 
+cd $workpath/$out
 
 ##
 files=( $(ls | grep "^R_" | grep "MACS2" | grep -v "deseq") )
@@ -19,5 +22,7 @@ do
     echo $f
     Rscript --vanilla $PBS_O_WORKDIR/R/MACS2overlaps.R $f
 done
-
-
+mv *.pdf plots
+mv *png plots
+mv *.gff gff
+mv *.csv result_files
