@@ -39,7 +39,7 @@ for t in "${type[@]}"
 
 # === START ===
 
-    if [ ! -f $workpath/${outname}/counts/${NAME}_${gff}.counts.tab ];
+    if [ ! -f $workpath/${outname}/counts/${NAME}_${gffname}.counts.tab ];
     then
         echo "htseq"
         htseq-count -f bam -s no ${workpath}/${outname}/${mytype}/$NAME.$filetype.bam ${gff} > $workpath/${outname}/counts/${NAME}_${gffname}.counts.tab 

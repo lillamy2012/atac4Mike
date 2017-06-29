@@ -94,7 +94,7 @@ for k in "${de_table[@]}"
         do
             echo $i
 	type=$(grep ^$i $PARAM_FILE | awk '{print $4}')
-            printf "%s\t" ${i}.uniq_filtered_${k}_counts.tab $type $(grep ^$i $PARAM_FILE | awk '{print $3}') >> $workpath/$outname/R_${k}_deseq.tab
+            printf "%s\t" ${i}_${k}.gff.counts.tab $type $(grep ^$i $PARAM_FILE | awk '{print $3}') >> $workpath/$outname/R_${k}_deseq.tab
             printf "\n" >>  $workpath/$outname/R_${k}_deseq.tab
         done
 done

@@ -20,7 +20,7 @@ do
     cat ${bashpath}${ff}_main.sh >> $out/scripts/${ff}.sh
 done
 
-r="yes"
+r="no"
 #step 3
 # setup submission
 # main work
@@ -32,7 +32,7 @@ c1=$(qsub -W depend=afterok:${b1} $out/scripts/generateTables.sh) # generate fil
 d1=$(qsub -W depend=afterok:${c1} $out/scripts/run_macs.sh) # run macs on merged bam files, depends on a1, b1 and c1!
 e1=$(qsub -W depend=afterok:${d1} $out/scripts/run_R_peaks.sh) # merge peaks , generate gff (both merged and for each narrow)
 #counts and tpm 
-f1=$(qsub -W depend=afterok:${e1} $out/scripts/count_reads_in_narrowpeaks.sh) # narrow peaks FIXME count in all peaks!
+f1=$(qsub -W depend=afterok:${e1} $out/scripts/count_reads_in_narrowpeaks.sh) # narrow peaks 
 g1=$(qsub -W depend=afterok:${f1} $out/scripts/calculate_tpm_in_narrowpeak.sh)
 f2=$(qsub -W depend=afterok:${e1} $out/scripts/count_reads_in_peakregions.sh) # in the merged peaks
 g2=$(qsub -W depend=afterok:${f2} $out/scripts/calculate_tpm_in_peakregions.sh)
@@ -48,6 +48,9 @@ qrls ${a1}
 
 fi
 
+s="no"
+if [ "${s}" = "yes" ]; then 
+echo "stats"
 # statistics:
 st1=$(qsub $out/scripts/generateStatistics.sh)
 i=0
@@ -59,7 +62,7 @@ done
 
 st3=$(qsub -W depend=afterok:${st2[0]}:${st2[1]}:${st2[2]}:${st2[3]}:${st2[4]} $out/scripts/run_R_plots.sh)
 
-
+fi
 
 
 ## level c ## rplots

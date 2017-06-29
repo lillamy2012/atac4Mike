@@ -17,15 +17,15 @@ for j in "${peaktype[@]}"
 do
     gff=${workpath}/$outname/$j.gff
 echo $gff
-    counts=${workpath}/$outname/$NAME.${filetype}_${j}_counts.tab 
+    counts=${workpath}/$outname/${NAME}_${j}.gff.counts.tab 
 echo $counts
     out=${workpath}/$outname/$NAME.${j}_length.tab
 echo $out
     joined=${workpath}/$outname/$NAME.${j}_joined.tab
 echo $joined
-    tpm=${workpath}/$outname/$NAME.${j}_tpm.tab
+    tpm=${workpath}/$outname/${NAME}_${j}.gff.tpm.tab
 echo $tmp
-    fpkm=${workpath}/$outname/$NAME.${j}_fpkm.tab
+    fpkm=${workpath}/$outname/${NAME}_${j}.gff.fpkm.tab
 echo $fpkm
 
     awk '{ $11 = $5 - $4 } { print $10 "\t" $11} ' $gff | tr -d '""' | tr -d ";" > $out
