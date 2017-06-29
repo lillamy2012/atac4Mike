@@ -1,7 +1,13 @@
-#!/bin/bash
 
 
-cd /lustre/scratch/users/elin.axelsson/atac4Mike/test
+
+settingsfile=$PBS_O_WORKDIR/setting.txt
+workpath=$(grep workpath $settingsfile | awk '{print $2}')
+out=$(grep outname $settingsfile | awk '{print $2}')
+
+
+cd ${workpath}/${out}
+
 ## pdf/png to plots
 mkdir -p plots
 mv *.pdf plots

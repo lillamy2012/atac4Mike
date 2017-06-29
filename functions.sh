@@ -76,7 +76,8 @@ createHead() { local OPTIND;
    calculate_tpm_in_narrowpeak)
         printf %"s\n" "#!/bin/bash" "#PBS -N calc_tpm_narrowpeaks" "#PBS -P berger_common" "#PBS -q workq" "#PBS -l walltime=00:10:00" "#PBS -e $out/calc_tpm_narrowpeaks_error_out" "#PBS -j eo" "#PBS -J 1-$nrBJ"
     ;;
-
+   cleanUpDir)
+	printf %"s\n" "#!/bin/bash" "#PBS -N cleanup" "#PBS -P berger_common" "#PBS -q workq" "#PBS -l walltime=00:02:00" "#PBS -e $out/cleanup_error_out" "#PBS -j eo"
 
 
 esac
