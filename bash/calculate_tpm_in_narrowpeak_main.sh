@@ -21,17 +21,19 @@ for j in "${peaktype[@]}"
 do
     for t in "${type[@]}"
     do 
-        gff=${workpath}/${outname}/${t}.${filetype}.bam_${j}_peaks.narrowPeak.gff
+	gffbase=${t}.${filetype}.bam_${j}_peaks.narrowPeak.gff
+        gff=${workpath}/${outname}/${gffbase}
         echo $gff
-        counts=${TOPATH}/${NAME}_${j}_peaks.narrowPeak_counts.tab 
+	
+        counts=${TOPATH}/${NAME}_${gffbase}.counts.tab 
         echo $counts
         out=${TOPATH}/$NAME.${t}_${j}_length.tab
         echo $out
         joined=${TOPATH}/$NAME.${t}_${j}_joined.tab
         echo $joined
-        tpm=${TOPATH}/$NAME.${t}_${j}_tpm.tab
+        tpm=${TOPATH}/${NAME}_${gffbase}.tpm.tab
 	echo $tmp
-        fpkm=${TOPATH}/$NAME.${t}_${j}_fpkm.tab
+        fpkm=${TOPATH}/${NAME}_${gffbase}.fpkm.tab
 
     awk '{ $11 = $5 - $4 } { print $10 "\t" $11} ' $gff | tr -d '""' | tr -d ";" > $out
     join -j1 <(grep -v __ $counts | sort -t$'\t' -n --key=1.5 ) <(sort -t$'\t' -n --key=1.5 $out) > $joined

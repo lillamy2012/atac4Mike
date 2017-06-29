@@ -38,10 +38,10 @@ do
 
 # === START ===
 
-    if [ ! -f ${workpath}/$out/$NAME.${filetype}_${j}_counts.tab ];
+    if [ ! -f ${workpath}/$out/${NAME}_${gff}.counts.tab ];
     then
         echo "htseq"
-        htseq-count -f bam -s no ${workpath}/$out/$type/$NAME.$filetype.bam ${workpath}/$out/${gff} > ${workpath}/$out/$NAME.${filetype}_${j}_counts.tab
+        htseq-count -f bam -s no ${workpath}/$out/$type/$NAME.$filetype.bam ${workpath}/$out/${gff} > ${workpath}/$out/${NAME}_${gff}.counts.tab
     fi
 done
 

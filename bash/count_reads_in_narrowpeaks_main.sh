@@ -15,8 +15,8 @@ outname=$(grep outname $settingsfile | awk '{print $2}')
 NAME=$(sed "${PARAM_IDX}q;d" $PARAM_FILE | awk '{print $1}')
 ALIGN=$(sed "${PARAM_IDX}q;d" $PARAM_FILE | awk '{print $2}')
 workpath=$(grep workpath $settingsfile | awk '{print $2}')
-type=$(sed "${PARAM_IDX}q;d" $PARAM_FILE | awk '{print $4}')
-#iPEAKPATH=${workpath}/${outname}/macs_results
+mytype=$(sed "${PARAM_IDX}q;d" $PARAM_FILE | awk '{print $4}')
+type=( $(awk '{print $4}' $PARAM_FILE | sort | uniq) )
 
 echo "NAME: $NAME"
 echo "workpath: $workpath"
@@ -31,15 +31,18 @@ mkdir -p ${workpath}/${outname}/counts
 
 for j in "${peaktype[@]}"
 do
-    gff=${workpath}/${outname}/${type}.${filetype}.bam_${j}_peaks.narrowPeak.gff
+for t in "${type[@]}"
+    do
+    gffname=${t}.${filetype}.bam_${j}_peaks.narrowPeak.gff
+    gff=${workpath}/${outname}/${gffname}
     echo $gff
 
 # === START ===
 
-    if [ ! -f $workpath/${outname}/counts/${NAME}_${j}_peaks.narrowPeak_counts.tab ];
+    if [ ! -f $workpath/${outname}/counts/${NAME}_${gff}.counts.tab ];
     then
         echo "htseq"
-        htseq-count -f bam -s no ${workpath}/${outname}/${type}/$NAME.$filetype.bam ${gff} > ${workpath}/${outname}/counts/${NAME}_${j}_peaks.narrowPeak_counts.tab
+        htseq-count -f bam -s no ${workpath}/${outname}/${mytype}/$NAME.$filetype.bam ${gff} > $workpath/${outname}/counts/${NAME}_${gffname}.counts.tab 
     fi
 done
-
+done
