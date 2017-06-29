@@ -48,4 +48,6 @@ rm $out
 rm $joined
 mv $tpm ${workpath}/${outname}/tpm
 mv $fpkm ${workpath}/${outname}/tpm
+
+done
 done
