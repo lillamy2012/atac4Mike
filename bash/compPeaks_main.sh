@@ -1,6 +1,7 @@
 
 
-settingsfile="../setting.txt"
+settingsfile=$PBS_O_WORKDIR/setting.txt
+#settingsfile="../setting.txt"
 outname=$(grep outname $settingsfile | awk '{print $2}')
 workpath=$(grep workpath $settingsfile | awk '{print $2}')
 
