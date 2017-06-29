@@ -27,6 +27,9 @@ mv *tpm.tab tpm
 mkdir -p counts
 mv *counts.tab counts
 
+## fpkm
+mv *fpkm.tab tpm
+ 
 ## tables
 mkdir -p tables
 mv R_* tables

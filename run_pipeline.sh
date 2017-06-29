@@ -20,7 +20,7 @@ do
     cat ${bashpath}${ff}_main.sh >> $out/scripts/${ff}.sh
 done
 
-r="no"
+r="yes"
 #step 3
 # setup submission
 # main work
