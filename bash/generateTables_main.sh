@@ -110,6 +110,10 @@ done
 ## merged bam files
 FILEA=$workpath/files.tab
 types=($(awk '{print $4}' $FILEA | uniq))
+if [ -f $workpath/files_macs.tab ];then
+	echo "rm"
+	rm $workpath/files_macs.tab
+fi
 for t in "${types[@]}"
 do
     printf "%s\n" $workpath/$outname/$t/${t}.uniq_filtered.bam >> $workpath/files_macs.tab

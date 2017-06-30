@@ -4,7 +4,7 @@
 . functions.sh
 
 r="yes" # run main work
-s="yes" # run statistics
+s="no" # run statistics
 
 #step 1
 #create output folder, scripts folder  and set path to bash files
