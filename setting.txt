@@ -2,6 +2,6 @@ workpath	/lustre/scratch/users/elin.axelsson/atac4Mike
 bampath	/lustre/scratch/users/elin.axelsson/demult
 index	/lustre/scratch/projects/berger_common/TAIR10/Bowtie2Index/Arabidopsis_thaliana.TAIR10.31.dna_rm.genome
 alignpath /lustre/scratch/users/elin.axelsson/atac4Mike/bam
-outname	test
-tmp_path tmp_file
+outname	spermVveg
+tmp_path tmp_file_sv
 Q_threshold	10
