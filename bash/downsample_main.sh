@@ -13,7 +13,8 @@ mkdir -p $TMPDIR
 settingsfile=$PBS_O_WORKDIR/setting.txt
 PARAM_FILE=$PBS_O_WORKDIR/files_macs.tab #$PBS_O_WORKDIR
 
-FULLNAME=( $(awk '{print $1}' $PARAM_FILE) )
+FULLNAME=( $(awk '{print $1}' $PARAM_FILE | sed s/".subset.bam"//) )
+echo $FULLNAME
 workpath=$(grep workpath $settingsfile | awk '{print $2}')
 outname=$(grep outname $settingsfile | awk '{print $2}')
 
@@ -35,3 +36,4 @@ for i in "${arrayNumber[@]}"; do
 	fi	
 	(( j++ ))
 done
+

@@ -116,7 +116,7 @@ if [ -f $workpath/files_macs.tab ];then
 fi
 for t in "${types[@]}"
 do
-    printf "%s\n" $workpath/$outname/$t/${t}.uniq_filtered.bam >> $workpath/files_macs.tab
+    printf "%s\n" $workpath/$outname/$t/${t}.uniq_filtered.bam.subset.bam >> $workpath/files_macs.tab
 done
 
 
