@@ -19,17 +19,19 @@ workpath=$(grep workpath $settingsfile | awk '{print $2}')
 outname=$(grep outname $settingsfile | awk '{print $2}')
 
 i=0
-max=0
 for n in "${FULLNAME[@]}"; do 
  	y=$(awk 'NR==1{print $1}' $n.flagstat.txt)
 	arrayNumber[$i]=$y
+	if [ $i -eq 0 ];then 
+ 		min=$y
+ 	fi
 	(( i++ ))
- 	((y > max)) && max=$y
+ 	((y < min)) && min=$y
 done
 j=0
 for i in "${arrayNumber[@]}"; do
 	if [ ! -f ${FULLNAME[j]}.subset.bam ]; then 
-		sub=$(echo "scale=2; $i/$max" | bc -l)
+		sub=$(echo "scale=2; $min/$i" | bc -l)
 		if [ $(echo $sub'<'1 | bc -l) -eq 1 ]; then 
 			java -Djava.io.tmpdir=$TMPDIR -jar $EBROOTPICARD/picard.jar DownsampleSam  I=${FULLNAME[j]} O=${FULLNAME[j]}.subset.bam P=$sub
 		else
