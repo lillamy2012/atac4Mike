@@ -19,5 +19,6 @@ if [ $rep -eq 1 ]; then
     if [ ! -f ${output} ];then
         cd ${workpath}/${outname}/${type}/
         samtools merge $output *.bam
-    fi
+	samtools flagstat ${output} > ${output}.flagstat.txt 
+   fi
 fi

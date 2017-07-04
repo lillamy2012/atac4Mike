@@ -65,7 +65,7 @@ createHead() { local OPTIND;
         printf %"s\n" "#!/bin/bash" "#PBS -N count_reads_peaks" "#PBS -P berger_common" "#PBS -q workq" "#PBS -l walltime=05:00:00" "#PBS -e $out/count_reads_peaks_error_out" "#PBS -j eo" "#PBS -J 1-$nrBJ"
     ;;
     count_reads_in_narrowpeaks)
-        printf %"s\n" "#!/bin/bash" "#PBS -N count_reads_narrowpeaks" "#PBS -P berger_common" "#PBS -q workq" "#PBS -l walltime=05:00:00" "#PBS -e $out/count_reads_narrowpeaks_error_out" "#PBS -j eo" "#PBS -J 1-$nrBJ"
+        printf %"s\n" "#!/bin/bash" "#PBS -N count_reads_narrowpeaks" "#PBS -P berger_common" "#PBS -q workq" "#PBS -l walltime=15:00:00" "#PBS -e $out/count_reads_narrowpeaks_error_out" "#PBS -j eo" "#PBS -J 1-$nrBJ"
     ;;
     run_R_deseq)
         printf %"s\n" "#!/bin/bash" "#PBS -N run_R_deseq" "#PBS -P berger_common" "#PBS -q workq" "#PBS -l walltime=00:10:00" "#PBS -e $out/run_R_deseq_error_out" "#PBS -j eo"
@@ -80,8 +80,9 @@ createHead() { local OPTIND;
 	printf %"s\n" "#!/bin/bash" "#PBS -N cleanup" "#PBS -P berger_common" "#PBS -q workq" "#PBS -l walltime=00:02:00" "#PBS -e $out/cleanup_error_out" "#PBS -j eo"
     ;;
    compPeaks) printf %"s\n" "#!/bin/bash" "#PBS -N combine_pks" "#PBS -P berger_common" "#PBS -q workq" "#PBS -l walltime=00:10:00" "#PBS -e $out/comb_pks__error_out" "#PBS -j eo"
-    ;;  
-
+    ;; 
+   downsample) printf %"s\n" "#!/bin/bash" "#PBS -N downsample" "#PBS -P berger_common" "#PBS -q workq" "#PBS -l walltime=02:00:00" "#PBS -e $out/downsample_error_out" "#PBS -j eo" 
+    ;;
 esac
 
 

@@ -48,6 +48,7 @@ tmpfile=${workpath}/${tmp}/${NAME}.sam_filtered.bam
 if [ ! -f ${output} ];then
     samtools view -bSq $quality ${input}> ${tmpfile}
     java -Djava.io.tmpdir=$TMPDIR -jar $EBROOTPICARD/picard.jar MarkDuplicates I=${tmpfile}  O= ${output} M=${NAME}_filtered.dup_metrics.txt AS=true REMOVE_DUPLICATES=true TMP_DIR=$TMPDIR
+#	samtools flagstat ${output} > ${output}.flagstat.txt
 fi
 
 
