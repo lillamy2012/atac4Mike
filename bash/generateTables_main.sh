@@ -134,7 +134,7 @@ do
         for t in "${types[@]}"
         do
             echo $t
-                printf "%s\n" $workpath/$outname/macs_results/${t}.uniq_filtered.bam_${k}_peaks.narrowPeak >> $workpath/$outname/R_$k.tab
+                printf "%s\n" $workpath/$outname/macs_results/${t}.uniq_filtered.bam.subset.bam_${k}_peaks.narrowPeak >> $workpath/$outname/R_$k.tab
         done
 done
 

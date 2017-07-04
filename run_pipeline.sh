@@ -4,7 +4,7 @@
 . functions.sh
 
 r="yes" # run main work
-s="yes" # run statistics
+s="n" # run statistics
 
 #step 1
 #create output folder, scripts folder  and set path to bash files
@@ -65,9 +65,9 @@ fi
 
 if [ "${r}" = "yes" ]; then 
 	if [ "${s}" = "yes" ]; then 
-		clen=$(qsub -W depend=afterok:${st3}:${h3}:${g1}:${g2} $out/scripts/cleanUpDir.sh)
+		clen=$(qsub -W depend=afterok:${st3}:${h3}:${h1}:${h2} $out/scripts/cleanUpDir.sh)
 	else
-		clen=$(qsub -W depend=afterok:${h3}:${g1}:${g2} $out/scripts/cleanUpDir.sh)
+		clen=$(qsub -W depend=afterok:${h3}:${h1}:${h2} $out/scripts/cleanUpDir.sh)
 
 	fi
 	merge=$(qsub -W depend=afterok:${clen} $out/scripts/compPeaks.sh)

@@ -33,7 +33,7 @@ for j in "${peaktype[@]}"
 do
 for t in "${type[@]}"
     do
-    gffname=${t}.${filetype}.bam_${j}_peaks.narrowPeak.gff
+    gffname=${t}.${filetype}.bam.subset.bam_${j}_peaks.narrowPeak.gff
     gff=${workpath}/${outname}/${gffname}
     echo $gff
 

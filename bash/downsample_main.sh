@@ -28,11 +28,13 @@ for n in "${FULLNAME[@]}"; do
 done
 j=0
 for i in "${arrayNumber[@]}"; do
-	sub=$(echo "scale=2; $i/$max" | bc -l)
-	if [ $(echo $sub'<'1 | bc -l) -eq 1 ]; then 
-		java -Djava.io.tmpdir=$TMPDIR -jar $EBROOTPICARD/picard.jar DownsampleSam  I=${FULLNAME[j]} O=${FULLNAME[j]}.subset.bam P=$sub
-	else
-		ln -s ${FULLNAME[j]} ${FULLNAME[j]}.subset.bam
+	if [ ! -f ${FULLNAME[j]}.subset.bam ]; then 
+		sub=$(echo "scale=2; $i/$max" | bc -l)
+		if [ $(echo $sub'<'1 | bc -l) -eq 1 ]; then 
+			java -Djava.io.tmpdir=$TMPDIR -jar $EBROOTPICARD/picard.jar DownsampleSam  I=${FULLNAME[j]} O=${FULLNAME[j]}.subset.bam P=$sub
+		else
+			ln -s ${FULLNAME[j]} ${FULLNAME[j]}.subset.bam
+		fi
 	fi	
 	(( j++ ))
 done
