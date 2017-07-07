@@ -153,10 +153,11 @@ annoF = paste(nn,"anno.csv",sep="_")
 print(annoF)
 anno = read.table(annoF,sep=";",header=T,comment.char="",quote = "") #new name ("MACS2_noInput_anno.csv")
 rownames(anno)=paste0("peak",1:nrow(anno))
-
+print(colnames(anno))
 ofInt = c("seqnames", "start", "end", "width", "annotation", "geneId" , "transcriptId" , "distanceToTSS")
+extra=grep("narrowPeak",colnames(anno),value=TRUE)
 
-anno = anno[,ofInt]
+anno = anno[,c(ofInt,extra)]
 
 tmp=list()
 for (i in files){
@@ -285,7 +286,7 @@ for (i in 1:length(resL)){
 for (i in 1:length(resL)){
 resOrder = resTable(resL[[i]],dds)
 resOrder = cbind(resOrder,anno[rownames(resOrder),])
-write.csv(resOrder,file=paste(paste(new,paste(contrL[[i]],collapse = "_"),sep="_"),"csv",sep="."))
+write.table(resOrder,file=paste(paste(new,paste(contrL[[i]],collapse = "_"),sep="_"),"csv",sep="."),sep=";",quote=FALSE)
 }
 
 

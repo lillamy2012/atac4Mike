@@ -4,7 +4,7 @@
 . functions.sh
 
 r="yes" # run main work
-s="yes" # run statistics
+s="no" # run statistics
 
 #step 1
 #create output folder, scripts folder  and set path to bash files
@@ -35,6 +35,7 @@ if [ "${r}" = "yes" ]; then
 	d1=$(qsub -W depend=afterok:${c1} $out/scripts/downsample.sh) # downsample larger sample	
 	e1=$(qsub -W depend=afterok:${d1} $out/scripts/run_macs.sh) # run macs on merged bam files, depends on a1, b1 and c1 d1!
 	f1=$(qsub -W depend=afterok:${e1} $out/scripts/run_R_peaks.sh) # merge peaks , generate gff (both merged and for each narrow)
+	#f1=$(qsub -h $out/scripts/run_R_peaks.sh)
 #counts and tpm/fpkm 
 	g1=$(qsub -W depend=afterok:${f1} $out/scripts/count_reads_in_narrowpeaks.sh) # narrow peaks 
 	h1=$(qsub -W depend=afterok:${g1} $out/scripts/calculate_tpm_in_narrowpeak.sh)
@@ -45,6 +46,7 @@ if [ "${r}" = "yes" ]; then
 
 #start!
 	qrls ${a1}
+	#qrls ${f1}
 fi
 
 # stats

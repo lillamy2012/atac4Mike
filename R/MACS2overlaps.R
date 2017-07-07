@@ -96,12 +96,20 @@ df = data.frame(seqnames(GRanges),rep("rtracklayer",length(GRanges)),"exon",star
 peaks=list()
 for (i in files){
     if(length(readLines(i))>0){
-        peaks[[i]] = readPeakFile(i,header=F)
-        peaks[[i]] = peaks[[i]][which(!seqnames(peaks[[i]])%in%c("mitochondria","chloroplast"))]
-        writeGFF(peaks[[i]],file=i)
-    }
+	nice_name = strsplit(i,"/")[[1]][length(strsplit(i,"/")[[1]])]
+        peaks[[nice_name]] = readPeakFile(i,header=F)
+        peaks[[nice_name]] = peaks[[nice_name]][which(!seqnames(peaks[[nice_name]])%in%c("mitochondria","chloroplast","Mt","Pt"))]
+	print(nice_name)
+#n=strsplit(names(peaks),"/")[[1]][length(strsplit(names(peaks),"/")[[1]])]
+#	print(n)
+#	print(names(peaks))[i]
+#	names(peaks)[i]=strsplit(names(peaks),"/")[[1]][length(strsplit(names(peaks),"/")[[1]])]
+	#names(peaks)[i]=strsplit(names(peaks),"/")[[1]][length(strsplit(names(peaks),"/")[[1]])]
+	writeGFF(peaks[[nice_name]],file=i)
+	    
 }
-
+}
+print(names(peaks))
 tot = reduce(Reduce(c, peaks)) # combine all peaks called
 tot_merge = mergeClosePeaks(tot)
 print(head(tot_merge))
