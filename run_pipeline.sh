@@ -3,7 +3,7 @@
 
 . functions.sh
 
-r="yes" # run main work
+r="no" # run main work
 s="no" # run statistics
 
 #step 1

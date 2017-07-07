@@ -36,4 +36,39 @@ for g in "${gfs[@]}"; do
 	cat header_${gf}.tab $outfile  > tmpfile2 
 	mv tmpfile2 $outfile
 	rm header_${gf}.tab 
-done 
+done
+
+cd $workpath/$outname/outfiles/
+
+anno="_anno.csv"
+deseq="_deseq_type_sperm_veg.csv"
+fpkm=".gff_summary.tab"
+
+for type in "MACS2_paired" "MACS2_noInput"; do
+
+    out=$type.total.csv
+
+### deseq and fpkm
+
+    join -j1 -t ";" <(awk 'FNR > 1 {print}' $type$deseq | sort -n --key=1.5 ) <(perl -wnlp -e 's/\s+/;/g;' $type$fpkm | awk 'FNR > 1 {print}' | sort -n --key=1.5) > $type.merge_tmp
+
+## header
+
+    awk 'BEGIN {FS=","}; NR==1 {print}' $type$deseq > $type.h1
+    awk 'NR==1 {print}' $type$fpkm > $type.h2
+
+    printf "Peak"\; > $out
+    printf $(cat $type.h1) >> $out
+    printf \; >> $out
+    printf $(cat $type.h2 | perl -wnlp -e 's/\s+/;/g;' |  cut -d';' -f 2-)>> $out
+    printf "\n" >> $out
+    cat $type.merge_tmp >> $out
+    cp $out $type.tmp
+    cut -d';' -f1-23 $type.tmp > $out
+
+    rm $type.h1 $type.h2 $type.merge_tmp $type.tmp
+done
+
+
+
+ 
