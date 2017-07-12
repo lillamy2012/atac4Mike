@@ -97,7 +97,7 @@ peaks=list()
 for (i in files){
     if(length(readLines(i))>0){
         peaks[[i]] = readPeakFile(i,header=F)
-        peaks[[i]] = peaks[[i]][which(!seqnames(peaks[[i]])%in%c("mitochondria","chloroplast"))]
+        peaks[[i]] = peaks[[i]][which(!seqnames(peaks[[i]])%in%c("mitochondria","chloroplast","mt"))]
         writeGFF(peaks[[i]],file=i)
     }
 }

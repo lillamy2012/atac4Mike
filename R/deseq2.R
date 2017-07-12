@@ -285,7 +285,7 @@ for (i in 1:length(resL)){
 for (i in 1:length(resL)){
 resOrder = resTable(resL[[i]],dds)
 resOrder = cbind(resOrder,anno[rownames(resOrder),])
-write.csv(resOrder,file=paste(paste(new,paste(contrL[[i]],collapse = "_"),sep="_"),"csv",sep="."))
+write.csv(resOrder,file=paste(paste(new,paste(contrL[[i]],collapse = "_"),sep="_"),"csv",sep="."),sep=";",quote = FALSE)
 }
 
 
