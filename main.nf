@@ -48,7 +48,8 @@ process mergeReplicates {
  set id, file(ff) from comb
 
   output:
-  file "${id}.merged.bam"
+  set id, file("${id}.merged.bam") into merged_bam_count
+  set id, file("${id}.merged.bam") into  merged_bam_sub
 
 script:
 """
@@ -56,19 +57,37 @@ samtools merge ${id}.merged.bam ${ff.collect { it }.join(' ')}
 """
 }
 
-/*process mergeReplicates {
-  input:
-  file all_replicates from replicates.collect()
+process mergeStats {
+ input:
+set type, file(merge) from merged_bam_count
 
-  """
- merge bam
-  """
+output:
+set type, file("${type}.flagstat.txt") into stats
+
+script:
+"""
+samtools flagstat ${merge} > ${type}.flagstat.txt
+"""
+}
 
 
-}*/
+process subsampleMerged {
 
-/*process subsampleMerged {
-}*/
+ input:
+ file(stat) from stats.collect()
+ set type, file(bam) from merged_bam_sub.collect()
+ 
+ output:
+ file subset into "${type}.subset.bam" 
+
+
+script:
+"""
+$baseDir/bin/downsample.sh 
+"""
+}
+
+
 
 /*process callMACS2 {
 }*/
