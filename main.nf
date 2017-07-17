@@ -75,19 +75,16 @@ process subsampleMerged {
 
  input:
  file(stat) from stats.collect()
- set type, file(bam) from merged_bam_sub.collect()
- 
+ set type, file(bam) from merged_bam_sub
+  
  output:
- file subset into "${type}.subset.bam" 
-
+ set type, file("${type}.subset.bam") into subbams
 
 script:
 """
 $baseDir/bin/downsample.sh 
 """
 }
-
-
 
 /*process callMACS2 {
 }*/
