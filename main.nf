@@ -19,6 +19,7 @@ design = Channel
         .splitCsv()
         .map { row -> [ id:row[1],cond:row[2] ] }
 
+designFile = file(params.design)
 
 // bamset will be used again later
 bamset.into { bamset; bamset_count }
@@ -66,6 +67,7 @@ process mergeReplicates {
     """
 }
 
+// run statistics on merged files (needed for down sampling) 
 process mergeStats {
  
     input:
@@ -80,7 +82,7 @@ process mergeStats {
     """
 }
 
-
+// sub sample to smallest condition
 process subsampleMerged {
 
     input:
@@ -96,6 +98,7 @@ process subsampleMerged {
     """
 }
 
+// call macs2
 process callMACS2 {
 
     input: 
@@ -112,7 +115,7 @@ process callMACS2 {
     """
 }
 
-
+// combine macs peaks to master peaks set 
 process makeMasterPeaks {
     
    input:
@@ -120,7 +123,7 @@ process makeMasterPeaks {
 
    output:
    file("master.gff") into master
-   file("master_anno.csv")
+   file("master_anno.csv") into anno
 
    script:
    """
@@ -129,6 +132,7 @@ process makeMasterPeaks {
 
 }
 
+// gff file from each narrow peak
 process makeFileGff {
 
    input:
@@ -143,10 +147,11 @@ process makeFileGff {
    """
 }  
 
-bamset_count_n=Channel.fromPath(params.bams)
-
+// count reads in master peaks and calculate FPKM
 process count_reads_in_master {
-   
+    
+   publishDir 'data/counts', mode: 'copy'  
+ 
    input:
    file("master.gff") from master
    set name, file(bams) from bamset_count
@@ -161,18 +166,22 @@ process count_reads_in_master {
    """
 }
 
-
+//bam files again 
 bamset_count_n=Channel.fromPath(params.bams)
 
+// all combination of gff file and bam file
 xch=bamset_count_n.combine(fileGFF)
 
+// count reads in narrowpeaks and calc FPKM
 process count_reads_in_narrow {
 tag "gff: $gff"
 
    input:
-   //set type, file(narrow) from fileGFF
-   //file(bams) from bamset_count_n
    set file(bams), file(gff) from xch
+
+   output:
+   file("${bams}_${gff}_counts.tab") into narrow_counts
+   file("${bams}_${gff}_fpkm.tab") into narrow_fpkm  
 
    """
    htseq-count -f bam -s no ${bams} ${gff} > ${bams}_${gff}_counts.tab
@@ -181,8 +190,21 @@ tag "gff: $gff"
 }
 
 
-/*process deseq2 {
-}*/
+process deseq2 {
+
+   input: 
+   file("master_anno.csv") from anno
+   file(counts) from master_counts.collect()
+   file(designFile)
+
+   output:
+   file("dds.Rdata")   
+
+   script:
+   """
+   $baseDir/bin/deseq2.R ${designFile}
+   """
+}
 
 /*process combineResults {
 }*/
