@@ -1,11 +1,15 @@
 #!/usr/bin/env nextflow
 
-params.design     = 'exp.tab'
-params.macs_call  = '-B -q 0.01 -f BAMPE'
-params.genomesize = '1.2e8'
-params.bams       = "bam/*small.bam" 
-params.quality    = 10  
+params.design        = 'exp.tab'
+params.macs_call     = '-B -q 0.01 -f BAMPE'
+params.genomesize    = '1.2e8'
+params.bams          = "bam/*small.bam" 
+params.quality       = 10  
+params.output        = "results/"
+params.anno_distance = 900
 
+
+// set up start channels, from bam and design file
 bamset = Channel
         .fromPath(params.bams)
         .map { file -> tuple(file.baseName, file) }
@@ -16,6 +20,11 @@ design = Channel
         .map { row -> [ id:row[1],cond:row[2] ] }
 
 
+// bamset will be used again later
+bamset.into { bamset; bamset_count }
+
+
+// generate uniq filtered files
 process generateFiles {
 tag "bam : $name"  
   
@@ -34,13 +43,14 @@ tag "bam : $name"
     """
 }
 
-uniq_filtered.into { for_rep; uniq_filtered }
 
-comb = for_rep.map { it -> [ id:it[0], file:it[1] ] }.phase(design) {it -> it.id}
+// set up channel with design info for each bam - needed for merging of replicates
+comb = uniq_filtered.map { it -> [ id:it[0], file:it[1] ] }.phase(design) {it -> it.id}
      .map { it -> tuple( it.cond[1] , it.file[0])  }
      .groupTuple(by: 0)
 
 
+// merged filtered, uniq bam replicates
 process mergeReplicates {
     
     input:
@@ -86,38 +96,94 @@ process subsampleMerged {
     """
 }
 
-/*process callMACS2 {
+process callMACS2 {
 
- input: 
- set type, file(sbam) from subbams
+    input: 
+    set type, file(sbam) from subbams
 
- output:
- file("${type}.peaks.narrowPeak") into narrowPeaks
+    output:
+    file("${type}_peaks.narrowPeak") into narrowPeaks_to_merge
+    set type, file("${type}_peaks.narrowPeak") into narrowPeaks_to_gff
 
-script:
-"""
-macs2 callpeak -t ${sbam} -g ${param.genomesize} -n ${type} ${param.macs_call}
-"""
-}*/
+    script:
+    """
+    export TMPDIR=\$(pwd)
+    macs2 callpeak -t ${sbam} -g ${params.genomesize} -n ${type} ${params.macs_call}
+    """
+}
 
 
+process makeMasterPeaks {
+    
+   input:
+   file(narrowPeaks) from narrowPeaks_to_merge.collect() 
 
-/*process makeMasterPeaks {
-}*/
+   output:
+   file("master.gff") into master
+   file("master_anno.csv")
 
-/*process count_reads_in_master {
-}*/
+   script:
+   """
+   $baseDir/bin/masterPeaks.R
+   """
 
-/*process count_reads_in_narrow {
-}*/
+}
 
-/*process calculate_fpkm_in_master {
+process makeFileGff {
 
-}*/
+   input:
+   set type, file(narrowPeaks) from narrowPeaks_to_gff
 
-/*process calculate_fpkm_in_narrow {
-}*/
+   output:
+   file("${type}_peaks.narrowPeak.gff") into fileGFF
+
+   script:
+   """
+   $baseDir/bin/peaks2gff.R
+   """
+}  
+
+bamset_count_n=Channel.fromPath(params.bams)
+
+process count_reads_in_master {
+   
+   input:
+   file("master.gff") from master
+   set name, file(bams) from bamset_count
+
+   output:
+   file ("${bams}_master_counts.tab") into master_counts
+   file ("${bams}_master_fpkm.tab") into master_fpkm
+
+   """
+   htseq-count -f bam -s no ${bams} master.gff > ${bams}_master_counts.tab
+   $baseDir/bin/calcFPKM.sh > ${bams}_master_fpkm.tab
+   """
+}
+
+
+bamset_count_n=Channel.fromPath(params.bams)
+
+xch=bamset_count_n.combine(fileGFF)
+
+process count_reads_in_narrow {
+tag "gff: $gff"
+
+   input:
+   //set type, file(narrow) from fileGFF
+   //file(bams) from bamset_count_n
+   set file(bams), file(gff) from xch
+
+   """
+   htseq-count -f bam -s no ${bams} ${gff} > ${bams}_${gff}_counts.tab
+   $baseDir/bin/calcFPKM.sh > ${bams}_${gff}_fpkm.tab
+   """
+}
+
 
 /*process deseq2 {
+}*/
+
+/*process combineResults {
 }*/
 
