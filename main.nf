@@ -208,7 +208,7 @@ process deseq2 {
 
    output:
    file("dds.Rdata")   
-   file(master_peaks_deseq_fig*)
+   file("master_peaks_deseq_fig*")
    file("deseq_results.csv")
 
    script:
