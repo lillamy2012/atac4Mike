@@ -178,11 +178,14 @@ publishDir 'results/counts', mode: 'copy'
 //bam files again 
 bamset_count_n=Channel.fromPath(params.bams)
 
+fileGFF.into {fileGFF; GFFS}
+
 // all combination of gff file and bam file
 xch=bamset_count_n.combine(fileGFF)
 
 // count reads in narrowpeaks and calc FPKM
 process count_reads_in_narrow {
+publishDir 'results/counts', mode: 'copy'
 tag "gff: $gff"
 
    input:
@@ -198,6 +201,12 @@ tag "gff: $gff"
    """
 }
 
+
+//comb = bamset.phase(rows) { it -> it.id}
+     //.subscribe{ println it }
+     //.map { it -> tuple( it.cond[1] , it.file[0])  }
+     //.groupTuple(by: 0)
+     //.subscribe { println it}
 
 process deseq2 {
 
@@ -217,6 +226,17 @@ process deseq2 {
    """
 }
 
-/*process combineResults {
-}*/
+process combineResults {
+
+  input: 
+  file(narrow) from GFFS.collect()
+  file(fpkm) from narrow_fpkm.collect() 
+  
+  script:
+  """
+  echo "ok"
+  """
+
+
+}
 
