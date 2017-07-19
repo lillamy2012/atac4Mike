@@ -28,6 +28,7 @@ bamset.into { bamset; bamset_count }
 // generate uniq filtered files
 process generateFiles {
 tag "bam : $name"  
+publishDir 'results/bam', mode: 'copy'
   
     input:
     set name, file(bam) from bamset
@@ -53,7 +54,8 @@ comb = uniq_filtered.map { it -> [ id:it[0], file:it[1] ] }.phase(design) {it ->
 
 // merged filtered, uniq bam replicates
 process mergeReplicates {
-    
+tag "id: $id"
+
     input:
     set id, file(ff) from comb
 
@@ -69,7 +71,7 @@ process mergeReplicates {
 
 // run statistics on merged files (needed for down sampling) 
 process mergeStats {
- 
+tag "type: $type" 
     input:
     set type, file(merge) from merged_bam_count
 
@@ -84,7 +86,9 @@ process mergeStats {
 
 // sub sample to smallest condition
 process subsampleMerged {
-
+tag "type: $type"
+publishDir 'results/ds_bam', mode: 'copy'
+    
     input:
     file(stat) from stats.collect()
     set type, file(bam) from merged_bam_sub
@@ -100,6 +104,8 @@ process subsampleMerged {
 
 // call macs2
 process callMACS2 {
+tag "type: $type"
+publishDir 'results/macs2', mode: 'copy'
 
     input: 
     set type, file(sbam) from subbams
@@ -117,7 +123,8 @@ process callMACS2 {
 
 // combine macs peaks to master peaks set 
 process makeMasterPeaks {
-    
+publishDir 'results/gff', mode: 'copy'   
+
    input:
    file(narrowPeaks) from narrowPeaks_to_merge.collect() 
 
@@ -134,7 +141,9 @@ process makeMasterPeaks {
 
 // gff file from each narrow peak
 process makeFileGff {
-
+tag "peak: $type"
+publishDir 'results/gff', mode: 'copy' 
+   
    input:
    set type, file(narrowPeaks) from narrowPeaks_to_gff
 
@@ -149,8 +158,8 @@ process makeFileGff {
 
 // count reads in master peaks and calculate FPKM
 process count_reads_in_master {
-    
-   publishDir 'data/counts', mode: 'copy'  
+tag "name: $name"
+publishDir 'results/counts', mode: 'copy'  
  
    input:
    file("master.gff") from master
@@ -199,6 +208,8 @@ process deseq2 {
 
    output:
    file("dds.Rdata")   
+   file(master_peaks_deseq_fig*)
+   file("deseq_results.csv")
 
    script:
    """
