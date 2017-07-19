@@ -115,7 +115,7 @@ if (length(args)==0){
   print ("more than one input file, only first will be processed")
 } else
   design=args[1]
-setup=read.csv(design)
+setup=read.table(design,sep=",",comment.char="")
 
 print(setup[,2])
 files = paste(setup[,2],"bam_master_counts.tab",sep=".")
@@ -140,6 +140,7 @@ countTab = countTab[-grep("__",rownames(countTab)),]
 
 colData = data.frame(type=as.factor(setup[,3]))
 rownames(colData)=colnames(countTab)
+contr=c("type",levels(colData$type)[1],levels(colData$type)[2])
 
 print("dds")
 dds <- DESeqDataSetFromMatrix(countData = countTab,
@@ -147,6 +148,41 @@ dds <- DESeqDataSetFromMatrix(countData = countTab,
                               design = ~ type)
 
 save(dds,file="dds.Rdata")
+
+runVisPlot(dds,"master_peaks")
+
+pdf("master_peaks_deseq_fig4.pdf")
+plotRep(dds)
+dev.off()
+
+CairoPNG("master_peaks_deseq_fig4.png")
+plotRep(dds)
+dev.off()
+
+
+dds = DESeq(dds)
+res = results(dds,contrast=contr)
+
+pdf("master_peaks_deseq_fig5.pdf")
+plotMA(res,main="ma plot")
+dev.off()
+
+CairoPNG("master_peaks_deseq_fig5.png")
+plotMA(res,main="ma plot")
+dev.off()
+
+pdf("master_peaks_deseq_fig6.pdf")
+plotScatter(dds,contrast = contr)
+dev.off()
+  
+CairoPNG("master_peaks_deseq_fig6.png")
+plotScatter(dds,contrast = contr)
+dev.off()
+
+resOrder=resTable(res,dds)
+resOrder = cbind(resOrder,anno[rownames(resOrder),])
+write.csv(resOrder,file="deseq_results.csv",sep=";",quote = FALSE)
+
 
 
 
