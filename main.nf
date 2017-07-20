@@ -155,6 +155,7 @@ publishDir 'results/gff', mode: 'copy'
    $baseDir/bin/peaks2gff.R
    """
 }  
+master.into { master; master2 }
 
 // count reads in master peaks and calculate FPKM
 process count_reads_in_master {
@@ -209,6 +210,7 @@ tag "gff: $gff"
      //.subscribe { println it}
 
 process deseq2 {
+publishDir 'results/deseq', mode: 'copy'
 
    input: 
    file("master_anno.csv") from anno
@@ -227,14 +229,19 @@ process deseq2 {
 }
 
 process combineResults {
+publishDir 'results/fpkm', mode: 'copy'
 
   input: 
   file(narrow) from GFFS.collect()
   file(fpkm) from narrow_fpkm.collect() 
-  
+  file("master.gff") from master2
+  file(m_fpkm) from master_fpkm.collect()
+ 
+  output:
+  file("*_summary.tab")
   script:
   """
-  echo "ok"
+  $baseDir/bin/combineFPKM.sh 
   """
 
 
