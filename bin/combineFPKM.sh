@@ -32,4 +32,31 @@ for g in "${gffs[@]}"; do
 
 done
 
+deseq="deseq_results.csv"
+fpkm="master.gff_summary.tab"
+out="deseq_total_results.csv"
+
+join -j1 -t ";" <(awk 'FNR > 1 {print}' $deseq | sort -n --key=1.5 ) <(perl -wnlp -e 's/\s+/;/g;' $fpkm | awk 'FNR > 1 {print}' | sort -n --key=1.5) > merge_tmp
+
+## header
+
+    awk 'BEGIN {FS=","}; NR==1 {print}' $deseq > h1
+    awk 'NR==1 {print}' $fpkm > h2
+
+    printf "Peak"\; > $out
+    printf $(cat h1) >> $out
+    printf \; >> $out
+    printf $(cat h2 | perl -wnlp -e 's/\s+/;/g;' |  cut -d';' -f 2-)>> $out
+    printf "\n" >> $out
+    cat merge_tmp >> $out
+    cp $out out.tmp
+    cut -d';' -f1-23 out.tmp > $out
+
+    rm h1 h2 merge_tmp out.tmp
+
+
+
+
+
+
 

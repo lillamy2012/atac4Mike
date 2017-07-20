@@ -220,7 +220,7 @@ publishDir 'results/deseq', mode: 'copy'
    output:
    file("dds.Rdata")   
    file("master_peaks_deseq_fig*")
-   file("deseq_results.csv")
+   file("deseq_results.csv") into deseq
 
    script:
    """
@@ -236,9 +236,12 @@ publishDir 'results/fpkm', mode: 'copy'
   file(fpkm) from narrow_fpkm.collect() 
   file("master.gff") from master2
   file(m_fpkm) from master_fpkm.collect()
+  file("deseq_results.csv") from deseq
  
   output:
   file("*_summary.tab")
+  file("deseq_total_results.csv")   
+
   script:
   """
   $baseDir/bin/combineFPKM.sh 
