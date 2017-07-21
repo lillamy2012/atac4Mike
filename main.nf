@@ -19,10 +19,12 @@ design = Channel
         .splitCsv()
         .map { row -> [ id:row[1],cond:row[2] ] }
 
+// for deseq script
 designFile = file(params.design)
 
 
-// generate uniq filtered files
+// generate uniq filtered files, needed for replicate merge and htseq counts, For the narrowPeaks we don't want the name in the output
+
 process generateFiles {
 tag "bam : $name"  
 publishDir 'results/bam', mode: 'copy'
@@ -32,6 +34,8 @@ publishDir 'results/bam', mode: 'copy'
 
     output:
     set name, file("${name}_uniq_filtered.bam") into uniq_filtered
+    set name, file("${name}_uniq_filtered.bam") into final_bamset_count
+    file("${name}_uniq_filtered.bam") into final_bamset_count_n
 
     script:
     """
@@ -42,20 +46,16 @@ publishDir 'results/bam', mode: 'copy'
     """
 }
 
-// the uniq filtered individul files are used for counting later
-
-uniq_filtered.into { uniq_filtered; bamset_count } 
-uniq_filtered.into { uniq_filtered;  uniq_count_n }
-bamset_count_n = uniq_count_n.map{ it -> it[1] }
-
 
 // set up channel with design info for each bam - needed for merging of replicates
+
 comb = uniq_filtered.map { it -> [ id:it[0], file:it[1] ] }.phase(design) {it -> it.id}
      .map { it -> tuple( it.cond[1] , it.file[0])  }
      .groupTuple(by: 0)
 
 
-// merged filtered, uniq bam replicates
+// merged filtered, uniq bam replicates. Needed for both flagstat and subsampling
+
 process mergeReplicates {
 tag "id: $id"
 
@@ -73,6 +73,7 @@ tag "id: $id"
 }
 
 // run statistics on merged files (needed for down sampling) 
+
 process mergeStats {
 tag "type: $type" 
     input:
@@ -87,7 +88,8 @@ tag "type: $type"
     """
 }
 
-// sub sample to smallest condition
+// sub sample to smallest condition. This will be used to call peaks
+
 process subsampleMerged {
 tag "type: $type"
 publishDir 'results/ds_bam', mode: 'copy'
@@ -105,7 +107,8 @@ publishDir 'results/ds_bam', mode: 'copy'
     """
 }
 
-// call macs2
+// call macs2, narrowPeaks are needed for masterpeak and counting in individual peaks
+
 process callMACS2 {
 tag "type: $type"
 publishDir 'results/macs2', mode: 'copy'
@@ -125,6 +128,7 @@ publishDir 'results/macs2', mode: 'copy'
 }
 
 // combine macs peaks to master peaks set 
+
 process makeMasterPeaks {
 publishDir 'results/gff', mode: 'copy'   
 
@@ -133,6 +137,7 @@ publishDir 'results/gff', mode: 'copy'
 
    output:
    file("master.gff") into master
+   file("master.gff") into master2 
    file("master_anno.csv") into anno
 
    script:
@@ -143,6 +148,7 @@ publishDir 'results/gff', mode: 'copy'
 }
 
 // gff file from each narrow peak
+
 process makeFileGff {
 tag "peak: $type"
 publishDir 'results/gff', mode: 'copy' 
@@ -158,16 +164,16 @@ publishDir 'results/gff', mode: 'copy'
    $baseDir/bin/peaks2gff.R
    """
 }  
-master.into { master; master2 }
 
 // count reads in master peaks and calculate FPKM
+
 process count_reads_in_master {
 tag "name: $name"
 publishDir 'results/counts', mode: 'copy'  
  
    input:
    file("master.gff") from master
-   set name, file(bams) from bamset_count
+   set name, file(bams) from final_bamset_count
 
    output:
    file ("${bams}_master_counts.tab") into master_counts
@@ -183,7 +189,7 @@ publishDir 'results/counts', mode: 'copy'
 fileGFF.into {fileGFF; GFFS}
 
 // all combination of gff file and bam file
-xch=bamset_count_n.combine(fileGFF)
+xch=final_bamset_count_n.combine(fileGFF)
 
 // count reads in narrowpeaks and calc FPKM
 process count_reads_in_narrow {
@@ -203,12 +209,6 @@ tag "gff: $gff"
    """
 }
 
-
-//comb = bamset.phase(rows) { it -> it.id}
-     //.subscribe{ println it }
-     //.map { it -> tuple( it.cond[1] , it.file[0])  }
-     //.groupTuple(by: 0)
-     //.subscribe { println it}
 
 process deseq2 {
 publishDir 'results/deseq', mode: 'copy'
