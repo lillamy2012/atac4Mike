@@ -21,9 +21,6 @@ design = Channel
 
 designFile = file(params.design)
 
-// bamset will be used again later
-bamset.into { bamset; bamset_count }
-
 
 // generate uniq filtered files
 process generateFiles {
@@ -44,6 +41,12 @@ publishDir 'results/bam', mode: 'copy'
    TMP_DIR=\$TMPDIR 
     """
 }
+
+// the uniq filtered individul files are used for counting later
+
+uniq_filtered.into { uniq_filtered; bamset_count } 
+uniq_filtered.into { uniq_filtered;  uniq_count_n }
+bamset_count_n = uniq_count_n.map{ it -> it[1] }
 
 
 // set up channel with design info for each bam - needed for merging of replicates
@@ -176,8 +179,6 @@ publishDir 'results/counts', mode: 'copy'
    """
 }
 
-//bam files again 
-bamset_count_n=Channel.fromPath(params.bams)
 
 fileGFF.into {fileGFF; GFFS}
 
