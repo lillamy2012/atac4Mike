@@ -31,6 +31,7 @@ for g in "${gffs[@]}"; do
      rm header_${gf}.tab 
 
 done
+echo "part1"
 
 deseq="deseq_results.csv"
 fpkm="master.gff_summary.tab"

@@ -118,7 +118,7 @@ if (length(args)==0){
 setup=read.table(design,sep=",",comment.char="")
 
 print(setup[,2])
-files = paste(setup[,2],"bam_master_counts.tab",sep=".")
+files = paste(setup[,2],"uniq_filtered.bam_master_counts.tab",sep="_")
 
 annoF = "master_anno.csv"
 
@@ -181,7 +181,7 @@ dev.off()
 
 resOrder=resTable(res,dds)
 resOrder = cbind(resOrder,anno[rownames(resOrder),])
-write.csv(resOrder,file="deseq_results.csv",sep=";",quote = FALSE)
+write.table(resOrder,file="deseq_results.csv",sep=";",quote = FALSE)
 
 
 
