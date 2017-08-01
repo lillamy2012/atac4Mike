@@ -92,11 +92,11 @@ tag "name: $name"
    script:
    """
    mkdir -p $workflow.projectDir/$params.stats
-   cutadapt --minimum-length ${params.min_length} --overlap ${params.overlap} -a ${params.a}  -A ${params.A} -o ${name}_cutadapt_R1_fastq -p ${name}_cutadapt_R2_fastq ${fq1} ${fq2} > $workflow.projectDir/$params.stats/${name}.cutadapt.log 
+   cutadapt --minimum-length ${params.min_length} --overlap ${params.overlap} -a ${params.a}  -A ${params.A} -o ${name}_cutadapt_R1_fastq -p ${name}_cutadapt_R2_fastq ${fq1} ${fq2}  
    """
 }
 
-
+//> $workflow.projectDir/$params.stats/${name}.cutadapt.log
 process bowtie2 {
 tag "name: $name"
 
@@ -108,9 +108,11 @@ tag "name: $name"
 
    script:
    """
-   bowtie2 --end-to-end -x ${index} -1 ${cut1} -2 ${cut2} -S ${name}.aligned_cut.sam 2> $workflow.projectDir/$params.stats/${name}.bowtie2.log
+   bowtie2 --end-to-end -x ${index} -1 ${cut1} -2 ${cut2} -S ${name}.aligned_cut.sam
    """
 }
+
+//2> $workflow.projectDir/$params.stats/${name}.bowtie2.log
 
 process sort {
 tag "name: $name"
