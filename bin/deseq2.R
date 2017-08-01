@@ -1,31 +1,9 @@
-args = commandArgs(trailingOnly=TRUE)
+#!/usr/bin/env Rscript
 
-if (length(args)==0){
-  stop("Provide tab filewith files to read")
-} else if (length(args)>1) {
-  print ("more than one input file, only first will be processed")
-} else
-  input=args[1]
-
-
-
-
-
-## first get some info from R_file: type, path, 
-## read in 
-## assign conditions
-## plots on all data (including input): PCA, pheatmap, heatmap, replicate plots
-## remove input 
-## plots, PCA, pheatmap, heatmap
-## 'anova' like 
-## pair-wise contrasts 
-## hit list 
-## plotMA, scatter plots, 
-
+library(Cairo)
 library(DESeq2)
 library("pheatmap")
 library("RColorBrewer")
-library(Cairo)
 
 
 ## functions
@@ -128,34 +106,26 @@ resTable = function(res,dds,th=0.01){
   tot
   }
 
+############################
+args = commandArgs(trailingOnly=TRUE)
 
+if (length(args)==0){
+  stop("Provide tab filewith files to read")
+} else if (length(args)>1) {
+  print ("more than one input file, only first will be processed")
+} else
+  design=args[1]
+setup=read.table(design,sep=",",comment.char="")
 
-###################
-###
+print(setup[,2])
+files = paste(setup[,2],"uniq_filtered.bam_master_counts.tab",sep="_")
 
+annoF = "master_anno.csv"
 
-
-
-#input = "R_test.tab"
-name = basename(input)
-name = sub("R_","",name)
-lname = strsplit(name,"\\.")[[1]]
-exclude = c("bam","tab","txt")
-new = paste(lname[!lname%in%exclude],collapse = "_")
-setup=read.table(input, comment.char="")
-
-print(setup)
-files  = setup[,1]
-
-nn = gsub("_deseq","",new)
-annoF = paste(nn,"anno.csv",sep="_")
-#"uniq_filtered_MACS2_withInput_anno.csv"
-print(annoF)
-anno = read.table(annoF,sep=";",header=T,comment.char="",quote = "")
+anno = read.table(annoF,sep=";",header=T,comment.char="",quote = "") 
+print(head(anno))
 rownames(anno)=paste0("peak",1:nrow(anno))
-
 ofInt = c("seqnames", "start", "end", "width", "annotation", "geneId" , "transcriptId" , "distanceToTSS")
-
 anno = anno[,ofInt]
 
 tmp=list()
@@ -164,134 +134,65 @@ for (i in files){
   tmp[[i]]=read.table(i,row.names = 1,header=F,sep="\t")
   colnames(tmp[[i]])=i
 }
-print("ok")
+
 countTab=do.call("cbind",tmp)
 countTab = countTab[-grep("__",rownames(countTab)),]
 
-print("2")
-setup$samp = ifelse(setup$V3=="sample",1,0)
-colData = data.frame(type=as.factor(setup$V2))
+colData = data.frame(type=as.factor(setup[,3]))
 rownames(colData)=colnames(countTab)
+contr=c("type",levels(colData$type)[1],levels(colData$type)[2])
 
 print("dds")
 dds <- DESeqDataSetFromMatrix(countData = countTab,
                               colData = colData,
                               design = ~ type)
 
+save(dds,file="dds.Rdata")
 
+runVisPlot(dds,"master_peaks")
 
-## plots based on all samples
-runVisPlot(dds,paste(new,"all",sep="_"))
-pdf(paste(paste(new,"all",sep="_"),"deseq_fig4.pdf",sep="_"))
+pdf("master_peaks_deseq_fig4.pdf")
 plotRep(dds)
 dev.off()
 
-CairoPNG(paste(paste(new,"all",sep="_"),"deseq_fig4.png",sep="_"))
+CairoPNG("master_peaks_deseq_fig4.png")
 plotRep(dds)
 dev.off()
 
-
-
-## only samples
-
-
-colData=data.frame(type=colData$type[which(setup$samp==1),drop=TRUE])
-countTab=countTab[,setup$samp==1]
-rownames(colData)=colnames(countTab)
-dds <- DESeqDataSetFromMatrix(countData = countTab,
-                              colData = colData,
-                              design = ~ type)
-
-
-runVisPlot(dds,paste(new,"samples",sep="_"))
-pdf(paste(paste(new,"samples",sep="_"),"deseq_fig4.pdf",sep="_"))
-plotRep(dds)
-dev.off()
-
-CairoPNG(paste(paste(new,"samples",sep="_"),"deseq_fig4.png",sep="_"))
-plotRep(dds)
-dev.off()
-
-
-## "anova" like plus all pairwise contrasts
-
-if (nlevels(colData$type)>2){
-  dds <- estimateSizeFactors(dds)
-  dds <- estimateDispersions(dds)
-  dds <- nbinomLRT(dds, reduced = ~ 1)
-  res_anova <- as.data.frame(results(dds,name="Intercept"))
-  res_ord_anova = res_anova[order(res_anova$padj),]
-  for (n in levels(colData$type)){
-    cc = as.matrix(rowMeans(counts(dds,normalized=TRUE)[,which(colData$type==n),drop=F]))
-    print(head(cc))
-    colnames(cc)=paste(n,"norm.counts",sep="_")
-    res_ord_anova=cbind(res_ord_anova,cc[rownames(res_ord_anova),])
-    colnames(res_ord_anova)[ncol(res_ord_anova)]=paste(n,"norm.counts",sep="_")
-  }
-  res_ord_anova=res_ord_anova[,!colnames(res_ord_anova)%in%c("log2FoldChange", "lfcSE","stat")]
-  
-  res_ord_anova = cbind(res_ord_anova,anno[rownames(res_ord_anova),])
-  write.csv(res_ord_anova,file = paste(new,"anovaLike.csv",sep="_"))
-  }
-  
-  
 
 dds = DESeq(dds)
-save(dds, file=paste(new,"dds.Rdata",sep="_"))
+res = results(dds,contrast=contr)
 
+pdf("master_peaks_deseq_fig5.pdf")
+plotMA(res,main="ma plot")
+dev.off()
 
-## contrasts
-## hhh
-pos = levels(colData$type)
-contrL = list()
-k=0
-for (i in 1:length(pos)){
-  for (j in (i+1):length(pos)){
-    if (j<=(length(pos)) & j!=i){
-      k=k+1
-    contrL[[k]]=c("type", pos[i], pos[j] )
-    }
-  }
-}
+CairoPNG("master_peaks_deseq_fig5.png")
+plotMA(res,main="ma plot")
+dev.off()
 
-resL = list()
-for (i in 1:length(contrL)){
-  resL[[i]]= results(dds,contrast = contrL[[i]])
-}
-
-## plots
-## ma
-for (i in 1:length(resL)){
-  pdf(paste0(paste(new,paste(contrL[[i]],collapse = "_"),sep="_"),"ma.pdf"))
-  plotMA(resL[[i]],main=paste(contrL[[i]],collapse = "_"))
-  dev.off()
+pdf("master_peaks_deseq_fig6.pdf")
+plotScatter(dds,contrast = contr)
+dev.off()
   
-  CairoPNG(paste0(paste(new,paste(contrL[[i]],collapse = "_"),sep="_"),"ma.png"))
-  plotMA(resL[[i]],main=paste(contrL[[i]],collapse = "_"))
-  dev.off()
-  
-  pdf(paste0(paste(new,paste(contrL[[i]],collapse = "_"),sep="_"),"scatter.pdf"))
-  plotScatter(dds,contrast = contrL[[i]])
-  dev.off()
-  
-  CairoPNG(paste0(paste(new,paste(contrL[[i]],collapse = "_"),sep="_"),"scatter.png"))
-  plotScatter(dds,contrast = contrL[[i]])
-  dev.off()
-  
-}
+CairoPNG("master_peaks_deseq_fig6.png")
+plotScatter(dds,contrast = contr)
+dev.off()
 
-## table
-
-for (i in 1:length(resL)){
-resOrder = resTable(resL[[i]],dds)
+resOrder=resTable(res,dds)
 resOrder = cbind(resOrder,anno[rownames(resOrder),])
-write.csv(resOrder,file=paste(paste(new,paste(contrL[[i]],collapse = "_"),sep="_"),"csv",sep="."))
-}
+write.table(resOrder,file="deseq_results.csv",sep=";",quote = FALSE)
 
 
 
-# annotate
 
 
-## table on fold change
+
+
+
+
+
+
+
+
 
