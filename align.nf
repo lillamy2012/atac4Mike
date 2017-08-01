@@ -90,6 +90,7 @@ tag "name: $name"
    
    script:
    """
+   mkdir -p  $workflow.projectDir/$params.stats
    cutadapt --minimum-length ${params.min_length} --overlap ${params.overlap} -a ${params.a}  -A ${params.A} -o ${name}_cutadapt_R1_fastq -p ${name}_cutadapt_R2_fastq ${fq1} ${fq2} > $workflow.projectDir/$params.stats/${name}.cutadapt.log 
    """
 }
