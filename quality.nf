@@ -39,7 +39,7 @@ process qualityFilter {
 }
 
 filter_markedBam=filter_markedBam.map{ it -> tuple(it[0],"filter_mark",it[1])}
-
+filter_markedBam.into { filter_markedBam; filter_markedBam2 }
 
 process removeDuplicates {
 
@@ -58,16 +58,25 @@ process removeDuplicates {
 
 uniq_filteredBam=uniq_filteredBam.map{ it -> tuple(it[0],"uniq_filtered",it[1])}
 
-/*
+uniq_filteredBam.mix(filter_markedBam2).subscribe{ println it }
+
+
 /*process flagstat {
 
     input: 
-    set name, file(bam) from allbams
+    set name, type, file(bam) from allbams
 
     output:
-    set name, file("${name}.
+    set name, file("${name}.${type}.flagstat.txt")
+
+    script:
+    """
+    samtools flagstat ${bam} > ${name}.${type}.flagstat.txt
+    """
+
 }
 
+/*
 process stats {
 }
 
