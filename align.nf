@@ -1,8 +1,9 @@
 #!/usr/bin/env nextflow
 
-
+// inparameters
 params.bams          = "/lustre/scratch/users/elin.axelsson/demult/test.bam"
 params.output        = "bam/"
+params.stats         = "align_logs/"
 params.min_length    = 5
 params.overlap       = 1
 params.read_length   = 0
@@ -10,14 +11,20 @@ params.A             = "CTGTCTCTTATACACATCTGACGCTGCCGACGA"
 params.a             = "CTGTCTCTTATACACATCTCCGAGCCCACGAGAC"
 params.index         = "/lustre/scratch/projects/berger_common/TAIR10/Bowtie2Index/Arabidopsis_thaliana.TAIR10.31.dna_rm.genome"
 
+// mm10 = /lustre/scratch/projects/berger_common/mm10/mm10_index_4Bowtie
+
+
+// index
 index=file(params.index)
 
-
+// start channel
 bams = Channel 
        .fromPath(params.bams)
        .map { file -> tuple(file.baseName, file) }
 
 bams.into { bam_read1; bam_read2 }
+
+// bam2fastq 1st and 2nd read in parallel , reads trimmed if read_length not 0
 
 process bam_to_fastq1 {
 tag "name: $name"
@@ -43,8 +50,6 @@ tag "name: $name"
        error "Invalid read_length argument"
 }
 
-
-
 process bam_to_fastq2 {
 tag "name: $name"
 
@@ -69,7 +74,10 @@ tag "name: $name"
        error "Invalid read_length argument"
 }
 
+// downstream pipeline needs the first and second read at once. 
+
 fqs = fq1.cross(fq2).map{ it -> tuple( it[0][0], it[0][1],it[1][1] )}
+
 
 process cutadapt {
 tag "name: $name"
@@ -79,10 +87,10 @@ tag "name: $name"
  
    output:
    set name, file("${name}_cutadapt_R1_fastq"), file("${name}_cutadapt_R2_fastq") into trimmed
-
+   
    script:
    """
-   cutadapt --minimum-length ${params.min_length} --overlap ${params.overlap} -a ${params.a}  -A ${params.A} -o ${name}_cutadapt_R1_fastq -p ${name}_cutadapt_R2_fastq ${fq1} ${fq2}  
+   cutadapt --minimum-length ${params.min_length} --overlap ${params.overlap} -a ${params.a}  -A ${params.A} -o ${name}_cutadapt_R1_fastq -p ${name}_cutadapt_R2_fastq ${fq1} ${fq2} > $workflow.projectDir/$params.stats/${name}.cutadapt.log 
    """
 }
 
@@ -94,16 +102,17 @@ tag "name: $name"
    set name, file(cut1), file(cut2) from trimmed
 
    output:
-   set name, file("${name}.aligned_cut.sam") into sams 
+   set name, file("${name}.aligned_cut.sam") into sams  
 
    script:
    """
-   bowtie2 --end-to-end -x ${index} -1 ${cut1} -2 ${cut2} -S ${name}.aligned_cut.sam
+   bowtie2 --end-to-end -x ${index} -1 ${cut1} -2 ${cut2} -S ${name}.aligned_cut.sam 2> $workflow.projectDir/$params.stats/${name}.bowtie2.log
    """
 }
 
 process sort {
 tag "name: $name"
+publishDir params.output, mode: 'copy'
 
    input:
    set name, file(sam) from sams
@@ -120,3 +129,4 @@ tag "name: $name"
    """
 }
 
+println "Project : $workflow.projectDir/$params.stats"
