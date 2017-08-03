@@ -60,22 +60,15 @@ for (i in files){
   rownames(is[[i]])=is[[i]]$V1
   is[[i]]=is[[i]][,2,drop=FALSE]
 }
-print(str(is))
 ## to matrix
 nrows = max(sapply(is,function(x)  max(as.numeric(rownames(x)))))
 ncols = length(is)
 insertCounts = matrix(0,ncol=ncols,nrow=nrows)
 colnames(insertCounts)=names(is)
 rownames(insertCounts)=1:nrows
-print(dim(insertCounts))
-
-print(dim(is[[1]]))
-print(dim(is[[2]]))
+if(min(sapply(is,function(x)  min(as.numeric(rownames(x)))))>0){
 
 for (i in names(is)){
-print(i)
-print(rownames(is[[i]]))
-print(unlist(is[[i]])
   insertCounts[rownames(is[[i]]),i]=unlist(is[[i]])
 }
 
@@ -112,5 +105,5 @@ matplot(test_fit0,type="l",lty=1,col=colors,lwd=2,main=type)
 legend("topright",legend = files, lwd=3,col=colors)
 dev.off()
 
-
+}
 
