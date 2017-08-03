@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 
 // inparameters
-params.bams          = "/lustre/scratch/users/elin.axelsson/BellATAC/demult/52787_TCCTGAGCTCGTCGGC_CB0GAANXX_4_20170621B_20170621.bam"
+params.bams          = "/lustre/scratch/users/elin.axelsson/BellATAC/demult/*.bam"
 params.output        = "bam/"
 params.stats         = "align_logs/"
 params.min_length    = 5
@@ -12,7 +12,7 @@ params.a             = "CTGTCTCTTATACACATCTCCGAGCCCACGAGAC"
 
 //params.index         = "/lustre/scratch/projects/berger_common/TAIR10/Bowtie2Index/Arabidopsis_thaliana.TAIR10.31.dna_rm.genome"
 
-params.index         = "/lustre/scratch/projects/berger_common/mm10/mm10_index_4Bowtie"
+params.index         = "/lustre/scratch/projects/berger_common/mm10/mm10_index_4Bowtie/mm10"
 
 
 // index
@@ -92,7 +92,7 @@ tag "name: $name"
    script:
    """
    mkdir -p $workflow.projectDir/$params.stats
-   cutadapt --minimum-length ${params.min_length} --overlap ${params.overlap} -a ${params.a}  -A ${params.A} -o ${name}_cutadapt_R1_fastq -p ${name}_cutadapt_R2_fastq ${fq1} ${fq2}  
+   cutadapt --minimum-length ${params.min_length} --overlap ${params.overlap} -a ${params.a}  -A ${params.A} -o ${name}_cutadapt_R1_fastq -p ${name}_cutadapt_R2_fastq ${fq1} ${fq2}> $workflow.projectDir/$params.stats/${name}.cutadapt.log 
    """
 }
 
@@ -108,7 +108,7 @@ tag "name: $name"
 
    script:
    """
-   bowtie2 --end-to-end -x ${index} -1 ${cut1} -2 ${cut2} -S ${name}.aligned_cut.sam
+   bowtie2 --end-to-end -x ${index} -1 ${cut1} -2 ${cut2} -S ${name}.aligned_cut.sam 2> $workflow.projectDir/$params.stats/${name}.bowtie2.log
    """
 }
 
@@ -133,4 +133,3 @@ publishDir params.output, mode: 'copy'
    """
 }
 
-println "Project : $workflow.projectDir/$params.stats"
