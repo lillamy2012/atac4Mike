@@ -60,7 +60,7 @@ process removeDuplicates {
 uniq_filteredBam=uniq_filteredBam.map{ it -> tuple(it[0],"uniq_filtered",it[1])}
 
 allbams=uniq_filteredBam.mix(filter_markedBam2).mix(markedBam2)
-allbams.into { allbams; allbams2 }
+allbams.into { allbams; allbams2; allbams3; allbams4 }
 
 process flagstat {
 
@@ -70,8 +70,8 @@ process flagstat {
     output:
     set name, file("${name}.${type}.flagstat.txt") into flagstats
     set name, file("${name}.${type}.stats.txt") into stats
-    set name, file("${name}.${type}.depth.txt") into depths
-    file("${name}.${type}.numbers.txt")
+    set name, type, file("${name}.${type}.depth.txt") into depths
+    set name, type, file("${name}.${type}.numbers.txt") into numbers
 
     script:
     """
@@ -85,7 +85,7 @@ process flagstat {
 
 }
 
-allbams2.into { allbams2; allbams3 }
+//allbams2.into { allbams2; allbams3 }
 
 process samtools_mult {
 
@@ -108,30 +108,70 @@ process getIS {
   set name, type, file(bam) from allbams3
 
   output:
-  file("${name}.${type}.IS.tab")
+  set type, file("${name}.${type}.IS.tab") into is
 
   script:
   """
 samtools view -f 66 ${bam} | awk '{print \$9}' | python  $baseDir/bin/my_counter.py > ${name}.${type}.IS.tab
   """
+}
+
+process coverTable {
+
+  input:
+  set name, type, file(depth) from depths
+
+  output:
+  file("${name}.${type}.depth.table.tab")
+
+  script:
+  """
+  awk '{print \$3}' ${depth} | python $baseDir/bin/my_counter.py > ${name}.${type}.depth.table.tab
+  """
 
 }
-/*
-awk '{print $3}' ${workpath}/$out/results/$NAME.$f.depth.txt | python $PBS_O_WORKDIR/python/my_counter.py > ${workpath}/$out/$NAME.$f.depth.table.tab
-done
 
 
+//orderedNum=numbers.groupTuple(by:1).map{ it -> [ it[1] , it[2]]}.collect().subscribe{ println it }
+orderedNum = numbers.map{it -> tuple( it[1] , it[2])}.groupTuple(by:0)
+orderedIs =  is.groupTuple(by:0)
+
+process R_barplots {
+tag "type: $type"
+
+   input: 
+   set type, file(num) from orderedNum
+
+   output:
+   file("${type}_fig1.png")
+   file("${type}_fig2.png")
+   file("${type}_fig3.png")
+   file("${type}_fig1.pdf")
+   file("${type}_fig2.pdf")
+   file("${type}_fig3.pdf")
+
+   script:
+   """
+   Rscript --vanilla $baseDir/bin/barplot.R ${type}  ${num.collect { it }.join(' ')}  
+   """
+   
+}
+
+process R_insertplots {
+tag "type: $type"
+
+   input:
+   set type, file(is) from orderedIs
 
 
-
-
-
-
-
+  script:
+"""
+echo ${is.collect { it }.join(' ')}
+"""
 
 }
-*/
-/*
-process depth {
-}
-*/
+
+
+
+
+
