@@ -163,11 +163,16 @@ tag "type: $type"
    input:
    set type, file(is) from orderedIs
 
+   output:
+   file("${type}_is_fig1.pdf")
+   file("${type}_is_fig1.png")
+   file("${type}_is_fig2.pdf")
+   file("${type}_is_fig2.png")
 
-  script:
-"""
-echo ${is.collect { it }.join(' ')}
-"""
+   script:
+   """
+   Rscript --vanilla $baseDir/bin/insertplot.R ${type} ${is.collect { it }.join(' ')}
+   """
 
 }
 

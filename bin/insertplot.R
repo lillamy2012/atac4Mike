@@ -67,9 +67,15 @@ ncols = length(is)
 insertCounts = matrix(0,ncol=ncols,nrow=nrows)
 colnames(insertCounts)=names(is)
 rownames(insertCounts)=1:nrows
-print(head(insertCounts))
+print(dim(insertCounts))
+
+print(dim(is[[1]]))
+print(dim(is[[2]]))
 
 for (i in names(is)){
+print(i)
+print(rownames(is[[i]]))
+print(unlist(is[[i]])
   insertCounts[rownames(is[[i]]),i]=unlist(is[[i]])
 }
 
