@@ -60,7 +60,7 @@ process removeDuplicates {
 uniq_filteredBam=uniq_filteredBam.map{ it -> tuple(it[0],"uniq_filtered",it[1])}
 
 allbams=uniq_filteredBam.mix(filter_markedBam2).mix(markedBam2)
-allbams.into { allbams; allbams2; allbams3; allbams4 }
+allbams.into { allbams; allbams2; allbams3 }
 
 process flagstat {
 
@@ -68,10 +68,10 @@ process flagstat {
     set name, type, file(bam) from allbams
 
     output:
-    set name, file("${name}.${type}.flagstat.txt") into flagstats
-    set name, file("${name}.${type}.stats.txt") into stats
+    set name, file("${name}.${type}.flagstat.txt")
+    set name, file("${name}.${type}.stats.txt") 
     set name, type, file("${name}.${type}.depth.txt") into depths
-    set name, type, file("${name}.${type}.numbers.txt") into numbers
+    set type, file("${name}.${type}.numbers.txt") into numbers
 
     script:
     """
@@ -85,7 +85,6 @@ process flagstat {
 
 }
 
-//allbams2.into { allbams2; allbams3 }
 
 process samtools_mult {
 
@@ -122,7 +121,7 @@ process coverTable {
   set name, type, file(depth) from depths
 
   output:
-  file("${name}.${type}.depth.table.tab")
+  set type, file("${name}.${type}.depth.table.tab") into depthTab
 
   script:
   """
@@ -133,8 +132,9 @@ process coverTable {
 
 
 //orderedNum=numbers.groupTuple(by:1).map{ it -> [ it[1] , it[2]]}.collect().subscribe{ println it }
-orderedNum = numbers.map{it -> tuple( it[1] , it[2])}.groupTuple(by:0)
+orderedNum = numbers.groupTuple(by:0)
 orderedIs =  is.groupTuple(by:0)
+orderedDepth = depthTab.groupTuple(by:0)
 
 process R_barplots {
 tag "type: $type"
@@ -176,7 +176,16 @@ tag "type: $type"
 
 }
 
+process R_coverageplots {
+tag "type: $type"
 
+   input:
+   set type, file(cov) from orderedDepth
 
+   script:
+   """
+   ls -lrt
+   """
+}
 
 

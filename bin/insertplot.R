@@ -72,7 +72,6 @@ for (i in names(is)){
   insertCounts[rownames(is[[i]]),i]=unlist(is[[i]])
 }
 
-print(t(t(insertCounts[1:250,])/colSums(insertCounts)))
 
 #create plots
 pdf(paste(type,"is_fig1.pdf",sep="_"))
@@ -105,7 +104,7 @@ matplot(test_fit0,type="l",lty=1,col=colors,lwd=2,main=type)
 legend("topright",legend = files, lwd=3,col=colors)
 dev.off()
 
-} else
+} else {
 
 pdf(paste(type,"is_fig1.pdf",sep="_"))
 dev.off()
@@ -118,4 +117,4 @@ dev.off()
 
 CairoPNG(paste(type,"is_fig2.png",sep="_"))
 dev.off()
-
+}
