@@ -1,12 +1,15 @@
 #!/usr/bin/env nextflow
 
-params.design        = 'exp.tab'
+params.design        = 'exp_1.tab'
 params.macs_call     = '-B -q 0.01 -f BAMPE'
-params.genomesize    = '1.2e8'
-params.bams          = "bam/*small.bam" 
+params.genomesize    = '2.7e9'
+params.bams          = "bam_1/*.bam" 
 params.quality       = 10  
-params.output        = "results/"
+params.output        = "results_1/"
 params.anno_distance = 900
+params.txdb          = "TxDb.Mmusculus.UCSC.mm10.knownGene" 
+
+//TAIR=TxDb.Athaliana.BioMart.plantsmart28
 
 
 // set up start channels, from bam and design file
@@ -27,7 +30,7 @@ designFile = file(params.design)
 
 process generateFiles {
 tag "bam : $name"  
-publishDir 'results/bam', mode: 'copy'
+publishDir "${params.output}/bam", mode: 'copy'
   
     input:
     set name, file(bam) from bamset
@@ -46,12 +49,12 @@ publishDir 'results/bam', mode: 'copy'
     """
 }
 
-
 // set up channel with design info for each bam - needed for merging of replicates
 
 comb = uniq_filtered.map { it -> [ id:it[0], file:it[1] ] }.phase(design) {it -> it.id}
      .map { it -> tuple( it.cond[1] , it.file[0])  }
-     .groupTuple(by: 0)
+     .groupTuple(by:0 )
+
 
 
 // merged filtered, uniq bam replicates. Needed for both flagstat and subsampling
@@ -92,7 +95,7 @@ tag "type: $type"
 
 process subsampleMerged {
 tag "type: $type"
-publishDir 'results/ds_bam', mode: 'copy'
+publishDir "${params.output}/ds_bam", mode: 'copy'
     
     input:
     file(stat) from stats.collect()
@@ -111,7 +114,7 @@ publishDir 'results/ds_bam', mode: 'copy'
 
 process callMACS2 {
 tag "type: $type"
-publishDir 'results/macs2', mode: 'copy'
+publishDir "${params.output}/macs2", mode: 'copy'
 
     input: 
     set type, file(sbam) from subbams
@@ -130,7 +133,7 @@ publishDir 'results/macs2', mode: 'copy'
 // combine macs peaks to master peaks set 
 
 process makeMasterPeaks {
-publishDir 'results/gff', mode: 'copy'   
+publishDir "${params.output}/gff", mode: 'copy'   
 
    input:
    file(narrowPeaks) from narrowPeaks_to_merge.collect() 
@@ -142,7 +145,7 @@ publishDir 'results/gff', mode: 'copy'
 
    script:
    """
-   $baseDir/bin/masterPeaks.R
+   $baseDir/bin/masterPeaks.R ${params.anno_distance} ${params.txdb}
    """
 
 }
@@ -151,7 +154,7 @@ publishDir 'results/gff', mode: 'copy'
 
 process makeFileGff {
 tag "peak: $type"
-publishDir 'results/gff', mode: 'copy' 
+publishDir "${params.output}/gff", mode: 'copy' 
    
    input:
    set type, file(narrowPeaks) from narrowPeaks_to_gff
@@ -169,7 +172,7 @@ publishDir 'results/gff', mode: 'copy'
 
 process count_reads_in_master {
 tag "name: $name"
-publishDir 'results/counts', mode: 'copy'  
+publishDir "${params.output}/counts", mode: 'copy'  
  
    input:
    file("master.gff") from master
@@ -193,7 +196,7 @@ xch=final_bamset_count_n.combine(fileGFF)
 
 // count reads in narrowpeaks and calc FPKM
 process count_reads_in_narrow {
-publishDir 'results/counts', mode: 'copy'
+publishDir "${params.output}/counts", mode: 'copy'
 tag "gff: $gff"
 
    input:
@@ -211,7 +214,7 @@ tag "gff: $gff"
 
 
 process deseq2 {
-publishDir 'results/deseq', mode: 'copy'
+publishDir "${params.output}/deseq", mode: 'copy'
 
    input: 
    file("master_anno.csv") from anno
@@ -230,7 +233,7 @@ publishDir 'results/deseq', mode: 'copy'
 }
 
 process combineResults {
-publishDir 'results/fpkm', mode: 'copy'
+publishDir "${params.output}/fpkm", mode: 'copy'
 
   input: 
   file(narrow) from GFFS.collect()

@@ -2,8 +2,21 @@
 
 library(ChIPseeker)
 library(GenomicRanges)
-library(TxDb.Athaliana.BioMart.plantsmart28)
-txdb = TxDb.Athaliana.BioMart.plantsmart28
+
+
+
+args = commandArgs(trailingOnly=TRUE)
+
+### get which txdb to use:
+tx=args[2]
+
+library(tx,character.only = TRUE)
+txdb=get(tx)
+
+#library(TxDb.Athaliana.BioMart.plantsmart28)
+#txdb = TxDb.Athaliana.BioMart.plantsmart28
+
+bp_distance = as.numeric(args[1])
 
 
 #####################
@@ -59,11 +72,12 @@ print(head(tot_merge))
 overlaps = createOverlapMat(peaks,tot_merge)
 
 ## annotate
-
-tot_anno = annotatePeak(tot_merge, tssRegion=c(-900, 900),TxDb=txdb)
-
-tot_df_anno = cbind(rownames(overlaps),as.data.frame(tot_anno),overlaps)
-
+print("anno")
+tot_anno = annotatePeak(tot_merge, tssRegion=c(-bp_distance, bp_distance),TxDb=txdb)
+tmp_anno = as.data.frame(tot_anno)
+rownames(tmp_anno) = paste(tmp_anno$seqnames, tmp_anno$start, tmp_anno$end,sep="_")
+#tot_df_anno = cbind(rownames(overlaps),as.data.frame(tot_anno),overlaps)
+tot_df_anno = merge(tmp_anno,overlaps,by="row.names",all=TRUE,sort=FALSE)
 
 ## create gff
 df = data.frame(seqnames(tot_merge),rep("rtracklayer",length(tot_merge)),"exon",start(tot_merge),end(tot_merge),rep(".",length(tot_merge)),rep("+",length(tot_merge)),rep(".",length(tot_merge)),paste0(paste0("gene_id \"peak",1:length(tot_merge)),"\";"))
