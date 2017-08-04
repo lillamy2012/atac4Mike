@@ -181,10 +181,16 @@ tag "type: $type"
 
    input:
    set type, file(cov) from orderedDepth
+  
+   output:
+   file("${type}_cov_fig1.pdf")
+   file("${type}_cov_fig1.png")
+   file("${type}_cov_fig2.pdf")
+   file("${type}_cov_fig2.png")
 
    script:
    """
-   ls -lrt
+   Rscript --vanilla $baseDir/bin/covplot.R ${type} ${cov.collect { it }.join(' ')}
    """
 }
 
