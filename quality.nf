@@ -1,7 +1,9 @@
 #!/usr/bin/env nextflow
 
-params.bams          = "bam/*.bam"
+params.bams          = "/lustre/scratch/users/elin.axelsson/BellATAC/atac4Mike/bam_1/*.bam"
 params.quality       = 10
+params.output        = "quality_1"
+
 
 bamset = Channel
         .fromPath(params.bams)
@@ -138,6 +140,7 @@ orderedDepth = depthTab.groupTuple(by:0)
 
 process R_barplots {
 tag "type: $type"
+publishDir "${params.output}"
 
    input: 
    set type, file(num) from orderedNum
@@ -159,6 +162,7 @@ tag "type: $type"
 
 process R_insertplots {
 tag "type: $type"
+publishDir "${params.output}"
 
    input:
    set type, file(is) from orderedIs
@@ -178,6 +182,7 @@ tag "type: $type"
 
 process R_coverageplots {
 tag "type: $type"
+publishDir "${params.output}"
 
    input:
    set type, file(cov) from orderedDepth
