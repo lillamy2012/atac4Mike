@@ -88,14 +88,13 @@ tag "name: $name"
  
    output:
    set name, file("${name}_cutadapt_R1_fastq"), file("${name}_cutadapt_R2_fastq") into trimmed
-   
+   file("${name}.cutadapt.log") into calogs 
+
    script:
    """
-   mkdir -p $workflow.projectDir/$params.stats
-   cutadapt --minimum-length ${params.min_length} --overlap ${params.overlap} -a ${params.a}  -A ${params.A} -o ${name}_cutadapt_R1_fastq -p ${name}_cutadapt_R2_fastq ${fq1} ${fq2} > $workflow.projectDir/$params.stats/${name}.cutadapt.log 
+   cutadapt --minimum-length ${params.min_length} --overlap ${params.overlap} -a ${params.a}  -A ${params.A} -o ${name}_cutadapt_R1_fastq -p ${name}_cutadapt_R2_fastq ${fq1} ${fq2} > ${name}.cutadapt.log 
    """
 }
-
 
 process bowtie2 {
 tag "name: $name"
@@ -105,10 +104,12 @@ tag "name: $name"
 
    output:
    set name, file("${name}.aligned_cut.sam") into sams  
+   file("${name}.bowtie2.log") into btlogs
 
    script:
    """
-   bowtie2 --end-to-end -x ${index} -1 ${cut1} -2 ${cut2} -S ${name}.aligned_cut.sam 2> $workflow.projectDir/$params.stats/${name}.bowtie2.log
+   bowtie2 --end-to-end -x ${index} -1 ${cut1} -2 ${cut2} -S ${name}.aligned_cut.sam 2> ${name}.bowtie2.log 
+
    """
 }
 
@@ -120,7 +121,7 @@ publishDir params.output, mode: 'copy'
    set name, file(sam) from sams
 
    output:
-   set name, file("${name}.aligned_cut_sorted.bam") into aligned
+   set name, file("${name}.aligned_cut_sorted.bam")
 
    script:
    """
@@ -130,5 +131,27 @@ publishDir params.output, mode: 'copy'
    samtools view -b ${sam} | samtools sort -T \$TMPDIR - > ${name}.aligned_cut_sorted.bam
    """
 }
+
+logs=calogs.mix(btlogs)
+
+
+process savelog {
+tag "name: $name"
+publishDir params.stats, mode: 'copy'
+
+ input: 
+ file(mylog) from logs
+
+ output:
+ file "${mylog.baseName}.logfile" 
+
+  script:
+  """
+  fname=\$(basename ${mylog})
+  fbname=\${fname%.*}
+  cp ${mylog} \${fbname}.logfile
+  """
+}
+ 
 
 println "Project : $workflow.projectDir/$params.stats"
