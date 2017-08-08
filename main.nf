@@ -1,11 +1,11 @@
 #!/usr/bin/env nextflow
 
-params.design        = 'exp_1.tab'
+params.design        = 'exp_2.tab'
 params.macs_call     = '-B -q 0.01 -f BAMPE'
 params.genomesize    = '2.7e9'
-params.bams          = "bam_1/*.bam" 
+params.bams          = "bam_2/*.bam" 
 params.quality       = 10  
-params.output        = "results_1/"
+params.output        = "results_2/"
 params.anno_distance = 900
 params.txdb          = "TxDb.Mmusculus.UCSC.mm10.knownGene" 
 
