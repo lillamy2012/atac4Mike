@@ -40,7 +40,7 @@ createOverlapMat = function(peaks,tot){
   ovs = list()
   allRegions= matrix(0,ncol=nsamp,nrow=length(tot))
   colnames(allRegions)=names(peaks)
-  rownames(allRegions)=paste(seqnames(tot),start(tot),end(tot),sep="_")
+  rownames(allRegions)=paste(seqnames(tot),start(tot),end(tot),sep="__")
   for (i in 1:nsamp){
     ovs[[i]] = findOverlaps(peaks[[i]],tot)
     allRegions[unique(subjectHits(ovs[[i]])),i] = 1 
@@ -75,9 +75,20 @@ overlaps = createOverlapMat(peaks,tot_merge)
 print("anno")
 tot_anno = annotatePeak(tot_merge, tssRegion=c(-bp_distance, bp_distance),TxDb=txdb)
 tmp_anno = as.data.frame(tot_anno)
-rownames(tmp_anno) = paste(tmp_anno$seqnames, tmp_anno$start, tmp_anno$end,sep="_")
+rownames(tmp_anno) = paste(tmp_anno$seqnames, tmp_anno$start, tmp_anno$end,sep="__")
+tmp_anno$seqnames=as.character(tmp_anno$seqnames)
 #tot_df_anno = cbind(rownames(overlaps),as.data.frame(tot_anno),overlaps)
+overlaps = data.frame(cbind(seqnames=sapply(strsplit(rownames(overlaps),"__"),"[[",1),overlaps))
 tot_df_anno = merge(tmp_anno,overlaps,by="row.names",all=TRUE,sort=FALSE)
+
+if (sum(tot_df_anno$seqnames.x==tot_df_anno$seqnames.y,na.rm=T)!=sum(!is.na(tot_df_anno$seqnames.x))){
+stop("error with seqnames")
+}
+tot_df_anno$seqnames.x=tot_df_anno$seqnames.y
+rownames(tot_df_anno) = tot_df_anno$Row.names
+toRemove=c("Row.names","seqnames.y")
+tot_df_anno=tot_df_anno[,!colnames(tot_df_anno)%in%toRemove]
+colnames(tot_df_anno)=sub("seqnames.x","seqnames",colnames(tot_df_anno))
 
 ## create gff
 df = data.frame(seqnames(tot_merge),rep("rtracklayer",length(tot_merge)),"exon",start(tot_merge),end(tot_merge),rep(".",length(tot_merge)),rep("+",length(tot_merge)),rep(".",length(tot_merge)),paste0(paste0("gene_id \"peak",1:length(tot_merge)),"\";"))
