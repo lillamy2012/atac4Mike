@@ -126,7 +126,9 @@ anno = read.table(annoF,sep=";",header=T,comment.char="",quote = "")
 print(head(anno))
 rownames(anno)=paste0("peak",1:nrow(anno))
 peaks = grep("narrowPeak",colnames(anno),value=T)
-ofInt = c(c("seqnames", "start", "end", "width", "annotation", "geneId" , "transcriptId" , "distanceToTSS"),c)
+print("ok")
+ofInt = c(c("seqnames", "start", "end", "width", "annotation", "geneId" , "transcriptId" , "distanceToTSS"),c(peaks))
+print(ofInt)
 anno = anno[,ofInt]
 
 tmp=list()
