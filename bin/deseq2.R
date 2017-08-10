@@ -125,7 +125,8 @@ annoF = "master_anno.csv"
 anno = read.table(annoF,sep=";",header=T,comment.char="",quote = "") 
 print(head(anno))
 rownames(anno)=paste0("peak",1:nrow(anno))
-ofInt = c("seqnames", "start", "end", "width", "annotation", "geneId" , "transcriptId" , "distanceToTSS")
+peaks = grep("narrowPeak",colnames(anno),value=T)
+ofInt = c(c("seqnames", "start", "end", "width", "annotation", "geneId" , "transcriptId" , "distanceToTSS"),c)
 anno = anno[,ofInt]
 
 tmp=list()

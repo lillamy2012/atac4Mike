@@ -49,10 +49,10 @@ createOverlapMat = function(peaks,tot){
   allRegions = data.frame(cbind(tot_base,allRegions))
   return(allRegions)
 }
-writeGFF = function(GRanges,file){
-df = data.frame(seqnames(GRanges),rep("rtracklayer",length(GRanges)),"exon",start(GRanges),end(GRanges),rep(".",length(GRanges)),rep("+",length(GRanges)),rep(".",length(GRanges)),paste0(paste0("gene_id \"peak",1:length(GRanges)),"\";"))
-    write.table(df,sep="\t",file=paste0(file,".gff"),row.names = FALSE,col.names = FALSE,quote = FALSE)
-}
+#writeGFF = function(GRanges,file){
+#df = data.frame(seqnames(GRanges),rep("rtracklayer",length(GRanges)),"exon",start(GRanges),end(GRanges),rep(".",length(GRanges)),rep("+",length(GRanges)),rep(".",length(GRanges)),paste0(paste0("gene_id \"peak",1:length(GRanges)),"\";"))
+#    write.table(df,sep="\t",file=paste0(file,".gff"),row.names = FALSE,col.names = FALSE,quote = FALSE)
+#}
 
 
 #########################
@@ -97,6 +97,10 @@ tot_df_anno=tot_df_anno[,!colnames(tot_df_anno)%in%toRemove]
 
 ## create gff
 df = data.frame(seqnames(tot_merge),rep("rtracklayer",length(tot_merge)),"exon",start(tot_merge),end(tot_merge),rep(".",length(tot_merge)),rep("+",length(tot_merge)),rep(".",length(tot_merge)),paste0(paste0("gene_id \"peak",1:length(tot_merge)),"\";"))
+
+name_order = paste(seqnames(tot_merge),start(tot_merge),end(tot_merge),sep="__")
+tot_df_anno = tot_df_anno[name_order,]
+
 
 write.table(df,sep="\t",file="master.gff",row.names = FALSE,col.names = FALSE,quote = FALSE)
 
