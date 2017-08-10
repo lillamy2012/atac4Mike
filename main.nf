@@ -1,11 +1,11 @@
 #!/usr/bin/env nextflow
 
-params.design        = 'exp_1.tab'
+params.design        = 'exp_2.tab'
 params.macs_call     = '-B -q 0.01 -f BAMPE'
 params.genomesize    = '2.7e9'
-params.bams          = "bam_1/*.bam" 
+params.bams          = "bam_2/*.bam" 
 params.quality       = 10  
-params.output        = "results_1/"
+params.output        = "results_2/"
 params.anno_distance = 900
 params.txdb          = "TxDb.Mmusculus.UCSC.mm10.knownGene" 
 
@@ -122,6 +122,7 @@ publishDir "${params.output}/macs2", mode: 'copy'
     output:
     file("${type}_peaks.narrowPeak") into narrowPeaks_to_merge
     set type, file("${type}_peaks.narrowPeak") into narrowPeaks_to_gff
+    file("${type}_peaks.narrowPeak") into narrowPeaks_to_plot
 
     script:
     """
@@ -142,6 +143,7 @@ publishDir "${params.output}/gff", mode: 'copy'
    file("master.gff") into master
    file("master.gff") into master2 
    file("master_anno.csv") into anno
+   file("master_anno.csv") into anno2
 
    script:
    """
@@ -149,7 +151,27 @@ publishDir "${params.output}/gff", mode: 'copy'
    """
 
 }
+process plotPeaks {
+publishDir "${params.output}/macs2", mode: 'copy'
 
+  input:
+  file(narrowPeaks) from narrowPeaks_to_plot.collect()
+  file("master_anno.csv") from anno2
+
+  output:
+  file("peakOV.fig1.pdf")
+  file("peakOV.fig2.pdf")
+  file("peakOV.fig3.pdf")
+  file("peakOV.fig1.png")
+  file("peakOV.fig2.png")
+  file("peakOV.fig3.png")
+
+
+  script:
+  """
+  $baseDir/bin/peakplots.R 
+  """
+}
 // gff file from each narrow peak
 
 process makeFileGff {

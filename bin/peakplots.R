@@ -1,3 +1,6 @@
+#!/usr/bin/env Rscript
+
+
 library(GenomicRanges)
 library(wesanderson)
 library(Cairo)
@@ -12,12 +15,24 @@ pdf("peakOV.fig1.pdf")
 upset(tot_merged,main.bar.color=w_col,sets.bar.color=w_col[1:2])
 dev.off()
 
+CairoPNG("peakOV.fig1.png")
+upset(tot_merged,main.bar.color=w_col,sets.bar.color=w_col[1:2])
+dev.off()
+
+
+
 ## length distr, of individual and of master
 tot_merged$peakL = tot_merged$end-tot_merged$start
 tot_merged$levels = factor(tot_merged$seqnames, levels=unique(mixedsort(tot_merged$seqnames)))
 pdf("peakOV.fig2.pdf")
 boxplot(tot_merged$peakL~tot_merged$levels,las=2,varwidth=T,col=wes_palette("Moonrise3",2)[2])
 dev.off()
+
+CairoPNG("peakOV.fig2.png")
+boxplot(tot_merged$peakL~tot_merged$levels,las=2,varwidth=T,col=wes_palette("Moonrise3",2)[2])
+dev.off()
+
+
 
 tot_merged$comb=ifelse(rowSums(tot_merged[,psets])==2,2,tot_merged[,psets[2]])
 
@@ -33,3 +48,10 @@ par(mfrow=c(1,2))
 boxplot(tot_merged$peakL~tot_merged$comb,col=w_col,names=c(sapply(strsplit(psets,"_"),"[[",1),"both"),main="Master")
 boxplot(lapply(peaks,function(x) y=width(x)),las=1,col=w_col[1:2],names=sapply(strsplit(psets,"_"),"[[",1),main="narrowPeak")
 dev.off()
+
+CairoPNG("peakOV.fig3.png")
+par(mfrow=c(1,2))
+boxplot(tot_merged$peakL~tot_merged$comb,col=w_col,names=c(sapply(strsplit(psets,"_"),"[[",1),"both"),main="Master")
+boxplot(lapply(peaks,function(x) y=width(x)),las=1,col=w_col[1:2],names=sapply(strsplit(psets,"_"),"[[",1),main="narrowPeak")
+dev.off()
+
