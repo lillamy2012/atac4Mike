@@ -51,7 +51,10 @@ join -j1 -t ";" <(awk 'FNR > 1 {print}' $deseq | sort -n --key=1.5 ) <(perl -wnl
     printf "\n" >> $out
     cat merge_tmp >> $out
     cp $out out.tmp
-    cut -d';' -f1-23 out.tmp > $out
+nrC=$(awk -F";" '{print NF}' out.tmp | sort -nu | tail -n 1)
+nn=$((nrC-3))
+echo $nn
+    cut -d';' -f1-$nn out.tmp > $out
 
     rm h1 h2 merge_tmp out.tmp
 
