@@ -135,7 +135,7 @@ tmp=list()
 for (i in files){
   print(i)
   tmp[[i]]=read.table(i,row.names = 1,header=F,sep="\t")
-  colnames(tmp[[i]])=f_name[i]
+  colnames(tmp[[i]])=f_names[i]
 }
 
 countTab=do.call("cbind",tmp)
