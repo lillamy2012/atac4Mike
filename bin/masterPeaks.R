@@ -11,13 +11,11 @@ args = commandArgs(trailingOnly=TRUE)
 tx=args[2]
 
 if(tx=="mm10ref_seq_txdb.sqlite"){
-	loadDb("/lustre/scratch/projects/berger_common/backup_berger_common/mm10ref_seq_txdb.sqlite")
+ txdb <-loadDb("/lustre/scratch/projects/berger_common/backup_berger_common/mm10ref_seq_txdb.sqlite")
 } else {
 	library(tx,character.only = TRUE)
+        txdb=get(tx)
 }
-
-txdb=get(tx)
-
 
 
 #library(TxDb.Athaliana.BioMart.plantsmart28)
