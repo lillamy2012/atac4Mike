@@ -32,8 +32,10 @@ runVisPlot=function(dds,prename){
   
   sampleDists <- dist(t(assay(rld)))
   sampleDistMatrix <- as.matrix(sampleDists)
-  rownames(sampleDistMatrix) <-  rld$type
-  colnames(sampleDistMatrix) <- NULL
+  rownames(sampleDistMatrix) <-  colnames(dds)
+#print(rld$type)
+#print(colnames(dds))
+  #colnames(sampleDistMatrix) <- colnames(dds)
   colors <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
   
   pdf(paste(prename,"deseq_fig3.pdf",sep="_"),onefile=FALSE)
@@ -120,6 +122,7 @@ print(setup[,2])
 files = paste(setup[,2],"uniq_filtered.bam_master_counts.tab",sep="_")
 f_names = setup[,1]
 
+print(f_names)
 annoF = "master_anno.csv"
 
 anno = read.table(annoF,sep=";",header=T,comment.char="",quote = "") 
@@ -132,10 +135,10 @@ print(ofInt)
 anno = anno[,ofInt]
 
 tmp=list()
-for (i in files){
-  print(i)
-  tmp[[i]]=read.table(i,row.names = 1,header=F,sep="\t")
-  colnames(tmp[[i]])=f_names[i]
+for (i in 1:length(files)){
+  print(files[i])
+  tmp[[files[i]]]=read.table(files[i],row.names = 1,header=F,sep="\t")
+  colnames(tmp[[files[i]]])=f_names[i]
 }
 
 countTab=do.call("cbind",tmp)
