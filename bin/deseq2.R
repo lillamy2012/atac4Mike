@@ -5,7 +5,6 @@ library(DESeq2)
 library("pheatmap")
 library("RColorBrewer")
 
-
 ## functions
 ############
 runVisPlot=function(dds,prename){
@@ -119,6 +118,7 @@ setup=read.table(design,sep=",",comment.char="")
 
 print(setup[,2])
 files = paste(setup[,2],"uniq_filtered.bam_master_counts.tab",sep="_")
+f_names = setup[,1]
 
 annoF = "master_anno.csv"
 
@@ -135,7 +135,7 @@ tmp=list()
 for (i in files){
   print(i)
   tmp[[i]]=read.table(i,row.names = 1,header=F,sep="\t")
-  colnames(tmp[[i]])=i
+  colnames(tmp[[i]])=f_name[i]
 }
 
 countTab=do.call("cbind",tmp)
