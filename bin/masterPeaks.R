@@ -2,7 +2,7 @@
 
 library(ChIPseeker)
 library(GenomicRanges)
-
+library(AnnotationDbi)
 
 
 args = commandArgs(trailingOnly=TRUE)
@@ -10,8 +10,15 @@ args = commandArgs(trailingOnly=TRUE)
 ### get which txdb to use:
 tx=args[2]
 
-library(tx,character.only = TRUE)
+if(tx=="mm10ref_seq_txdb.sqlite"){
+	loadDb("/lustre/scratch/projects/berger_common/backup_berger_common/mm10ref_seq_txdb.sqlite")
+} else {
+	library(tx,character.only = TRUE)
+}
+
 txdb=get(tx)
+
+
 
 #library(TxDb.Athaliana.BioMart.plantsmart28)
 #txdb = TxDb.Athaliana.BioMart.plantsmart28
