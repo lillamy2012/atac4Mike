@@ -1,12 +1,12 @@
 #!/usr/bin/env nextflow
 
 // inparameters
-params.bams          = "/lustre/scratch/users/elin.axelsson/BellATAC/demult/52787_TCCTGAGCTCGTCGGC_CB0GAANXX_4_20170621B_20170621.bam"
+params.bams          = "/lustre/scratch/users/elin.axelsson/BellATAC/demult_l/*.bam"
 params.output        = "bam/"
 params.stats         = "align_logs/"
 params.min_length    = 5
 params.overlap       = 1
-params.read_length   = 0
+params.read_length   = 50
 params.A             = "CTGTCTCTTATACACATCTGACGCTGCCGACGA"
 params.a             = "CTGTCTCTTATACACATCTCCGAGCCCACGAGAC"
 
