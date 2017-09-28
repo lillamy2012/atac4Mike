@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 
 // inparameters
-params.bams          = "/lustre/scratch/users/elin.axelsson/BellATAC/demult_l/*.bam"
+params.bams          = "/lustre/scratch/users/elin.axelsson/Mike-25-09-2017/demult/*.bam"
 params.output        = "bam/"
 params.stats         = "align_logs/"
 params.min_length    = 5
@@ -10,9 +10,9 @@ params.read_length   = 50
 params.A             = "CTGTCTCTTATACACATCTGACGCTGCCGACGA"
 params.a             = "CTGTCTCTTATACACATCTCCGAGCCCACGAGAC"
 
-//params.index         = "/lustre/scratch/projects/berger_common/TAIR10/Bowtie2Index/Arabidopsis_thaliana.TAIR10.31.dna_rm.genome"
+params.index         = "/lustre/scratch/projects/berger_common/TAIR10/Bowtie2Index/Arabidopsis_thaliana.TAIR10.31.dna_rm.genome"
 
-params.index         = "/lustre/scratch/projects/berger_common/mm10/mm10_index_4Bowtie/mm10"
+//params.index         = "/lustre/scratch/projects/berger_common/mm10/mm10_index_4Bowtie/mm10"
 
 
 // index

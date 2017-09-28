@@ -7,7 +7,9 @@ params.bams          = "bam_1/*.bam"
 params.quality       = 10  
 params.output        = "results_1/"
 params.anno_distance = 900
-params.txdb          = "mm10ref_seq_txdb.sqlite"
+params.txdb          = "TxDb.Athaliana.BioMart.plantsmart28"
+
+//"mm10ref_seq_txdb.sqlite"
 
 //"TxDb.Mmusculus.UCSC.mm10.knownGene" 
 
