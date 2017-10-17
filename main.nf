@@ -114,6 +114,42 @@ publishDir "${params.output}/ds_bam", mode: 'copy'
     """
 }
 
+subbams.into { subbams; subbams_bw }
+
+process sortBam {
+tag "bam: $bam"
+
+   input:
+   set type, file(bam) from subbams_bw
+
+   output:
+   set type, file("${type}.subset_sort.bam") into sortbams_bw
+
+   script:
+   """
+   samtools sort -o ${type}.subset_sort.bam ${bam}
+   """
+
+}
+
+process bam2bw {
+tag "bam: $bam"
+publishDir "${params.output}/ds_bam", mode: 'copy'
+
+   input:
+   set type, file(bam) from sortbams_bw
+
+   output:
+   set type, file("${type}.subset.bw") 
+
+   script:
+   """
+   export TMPDIR=\$(pwd)
+   samtools index ${bam}
+   bamCoverage -b ${bam} -o ${type}.subset.bw --normalizeTo1x 119146348 --binSize=10
+   """
+}
+
 // call macs2, narrowPeaks are needed for masterpeak and counting in individual peaks
 
 process callMACS2 {
