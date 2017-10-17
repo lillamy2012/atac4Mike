@@ -10,7 +10,9 @@ params.read_length   = 50
 params.A             = "CTGTCTCTTATACACATCTGACGCTGCCGACGA"
 params.a             = "CTGTCTCTTATACACATCTCCGAGCCCACGAGAC"
 
-params.index         = "/lustre/scratch/projects/berger_common/TAIR10/Bowtie2Index/Arabidopsis_thaliana.TAIR10.31.dna_rm.genome"
+params.index         = "/lustre/scratch/projects/berger_common/backup_berger_common/Bowtie2Index/genome"
+
+//TAIR10/Bowtie2Index/Arabidopsis_thaliana.TAIR10.31.dna_rm.genome"
 
 //params.index         = "/lustre/scratch/projects/berger_common/mm10/mm10_index_4Bowtie/mm10"
 
@@ -108,7 +110,7 @@ tag "name: $name"
 
    script:
    """
-   bowtie2 --end-to-end -x ${index} -1 ${cut1} -2 ${cut2} -S ${name}.aligned_cut.sam 2> ${name}.bowtie2.log 
+   bowtie2 --end-to-end -X 2000 -x ${index} -1 ${cut1} -2 ${cut2} -S ${name}.aligned_cut.sam 2> ${name}.bowtie2.log 
 
    """
 }
