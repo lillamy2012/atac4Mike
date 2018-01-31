@@ -1,22 +1,50 @@
 #!/usr/bin/env nextflow
 
+/*********************
+* Parameters
+*********************/
+
 params.design        = 'exp_1.tab'
 params.macs_call     = '-B -q 0.01 -f BAMPE'
-params.genomesize    = '2.7e9'
+params.genome        = 'Athaliana'
 params.bams          = "bam_1/*.bam" 
 params.quality       = 10  
 params.output        = "results_1/"
 params.anno_distance = 900
-params.txdb          = "TxDb.Athaliana.BioMart.plantsmart28"
+params.txdb          = "TxDb.Athaliana.BioMart.plantsmart28" 
+// "mm10ref_seq_txdb.sqlite" "TxDb.Mmusculus.UCSC.mm10.knownGene"
 params.peak_merge_dist = 50
 
+/**********************
+* set genome size
+***********************/
 
+if(params.genome == 'Ataliana'){
+	params.genomesize = '1.2e8'
+	params.txdb = "TxDb.Athaliana.BioMart.plantsmart28"
+}
 
-//"mm10ref_seq_txdb.sqlite"
+/*************************************************
+*************************************************/
 
-//"TxDb.Mmusculus.UCSC.mm10.knownGene" 
+log.info "ATAC-SEQ PIPE  N F  ~  version 0.1"
+log.info "====================================="
+log.info "====================================="
+log.info "bam files             : ${params.bam}"
+log.info "design 		: ${params.design}"
+log.info "quality threshold     : ${params.quality}"
+log.info "output                : ${params.output}"
+log.info "****************************************"
+log.info "macs call             : ${params.macs_call}"
+log.info "genome          	: ${params.genome}"
+log.info "genome size           : ${params.genomesize}"
+log.info "****************************************"
+log.info "peak merge distance   : ${params.peak_merge_dist}"
+log.info "annotation distance   : ${params.anno_distance}"
+log.info "tx db                 : ${params.txdb}"
 
-//TAIR=TxDb.Athaliana.BioMart.plantsmart28
+/*************************************************
+*************************************************/
 
 
 // set up start channels, from bam and design file
