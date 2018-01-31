@@ -29,7 +29,7 @@ bp_distance = as.numeric(args[1])
 ######################
 
 ## merge peaks 
-mergeClosePeaks=function(grange, length=50){
+mergeClosePeaks=function(grange, length){
   extended = grange
   start(extended)=start(extended)-length/2
   end(extended)=end(extended)+length/2
@@ -63,7 +63,7 @@ createOverlapMat = function(peaks,tot){
 #########################
 
 files = grep("narrowPeak",dir(),value=TRUE)
-
+mergeLen = as.numeric(args[1])
 
 peaks=list()
 for (i in files){
@@ -74,7 +74,7 @@ for (i in files){
 }
 
 tot = reduce(Reduce(c, peaks)) # combine all peaks called
-tot_merge = mergeClosePeaks(tot)
+tot_merge = mergeClosePeaks(tot,mergeLen)
 print(head(tot_merge))
 overlaps = createOverlapMat(peaks,tot_merge)
 

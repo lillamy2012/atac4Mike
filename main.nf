@@ -8,6 +8,9 @@ params.quality       = 10
 params.output        = "results_1/"
 params.anno_distance = 900
 params.txdb          = "TxDb.Athaliana.BioMart.plantsmart28"
+params.peak_merge_dist = 50
+
+
 
 //"mm10ref_seq_txdb.sqlite"
 
@@ -187,7 +190,7 @@ publishDir "${params.output}/gff", mode: 'copy'
 
    script:
    """
-   $baseDir/bin/masterPeaks.R ${params.anno_distance} ${params.txdb}
+   $baseDir/bin/masterPeaks.R ${params.anno_distance} ${params.txdb} ${params.peak_merge_dist}
    """
 
 }
