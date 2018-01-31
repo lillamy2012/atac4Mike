@@ -21,7 +21,7 @@ params.deseq_lfc       = 2
 * set genome size
 ***********************/
 
-if(params.genome == 'Ataliana'){
+if(params.genome == 'Athaliana'){
 	params.genomesize = '1.2e8'
 	params.txdb = "TxDb.Athaliana.BioMart.plantsmart28"
 }
@@ -32,21 +32,21 @@ if(params.genome == 'Ataliana'){
 log.info "ATAC-SEQ PIPE  N F  ~  version 0.1"
 log.info "====================================="
 log.info "====================================="
-log.info "bam files             : ${params.bam}"
-log.info "design 		: ${params.design}"
-log.info "quality threshold     : ${params.quality}"
-log.info "output                : ${params.output}"
+log.info "bam files		: ${params.bams}"
+log.info "design		: ${params.design}"
+log.info "quality threshold	: ${params.quality}"
+log.info "output		: ${params.output}"
 log.info "****************************************"
-log.info "macs call             : ${params.macs_call}"
-log.info "genome          	: ${params.genome}"
-log.info "genome size           : ${params.genomesize}"
+log.info "macs call		: ${params.macs_call}"
+log.info "genome		: ${params.genome}"
+log.info "genome size		: ${params.genomesize}"
 log.info "****************************************"
-log.info "peak merge distance   : ${params.peak_merge_dist}"
-log.info "annotation distance   : ${params.anno_distance}"
-log.info "tx db                 : ${params.txdb}"
+log.info "peak merge distance	: ${params.peak_merge_dist}"
+log.info "annotation distance	: ${params.anno_distance}"
+log.info "tx db			: ${params.txdb}"
 log.info "****************************************"
-log.info "deseq2 p-value 	: ${params.deseq_p}"
-log.info "deseq2 lfc            : ${params.deseq_lfc}"
+log.info "deseq2 p-value	: ${params.deseq_p}"
+log.info "deseq2 lfc		: ${params.deseq_lfc}"
 
 
 
