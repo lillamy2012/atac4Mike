@@ -4,16 +4,18 @@
 * Parameters
 *********************/
 
-params.design        = 'exp_1.tab'
-params.macs_call     = '-B -q 0.01 -f BAMPE'
-params.genome        = 'Athaliana'
-params.bams          = "bam_1/*.bam" 
-params.quality       = 10  
-params.output        = "results_1/"
-params.anno_distance = 900
-params.txdb          = "TxDb.Athaliana.BioMart.plantsmart28" 
+params.design          = 'exp_1.tab'
+params.macs_call       = '-B -q 1e-5 -f BAMPE'
+params.genome          = 'Athaliana'
+params.bams            = "bam_1/*.bam" 
+params.quality         = 10  
+params.output          = "results_1/"
+params.anno_distance   = 900
+params.txdb            = "TxDb.Athaliana.BioMart.plantsmart28" 
 // "mm10ref_seq_txdb.sqlite" "TxDb.Mmusculus.UCSC.mm10.knownGene"
 params.peak_merge_dist = 50
+params.deseq_p         = 0.01
+params.deseq_lfc       = 2
 
 /**********************
 * set genome size
@@ -42,6 +44,11 @@ log.info "****************************************"
 log.info "peak merge distance   : ${params.peak_merge_dist}"
 log.info "annotation distance   : ${params.anno_distance}"
 log.info "tx db                 : ${params.txdb}"
+log.info "****************************************"
+log.info "deseq2 p-value 	: ${params.deseq_p}"
+log.info "deseq2 lfc            : ${params.deseq_lfc}"
+
+
 
 /*************************************************
 *************************************************/
@@ -321,7 +328,7 @@ publishDir "${params.output}/deseq", mode: 'copy'
 
    script:
    """
-   $baseDir/bin/deseq2.R ${designFile}
+   $baseDir/bin/deseq2.R ${designFile} ${params.deseq_p} ${params.deseq_lfc}
    """
 }
 

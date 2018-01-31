@@ -53,7 +53,7 @@ runVisPlot=function(dds,prename){
   
 }
 
-plotScatter = function(dds,contrast,th=0.01){
+plotScatter = function(dds,contrast,th,fc){
   res = results(dds,contrast)
   ncounts = counts(dds,normalized=T)
   groups= colData(dds)[contrast[1]]
@@ -68,8 +68,8 @@ plotScatter = function(dds,contrast,th=0.01){
   abline(0,1,col="black",lwd=3)
   sig=which(res$padj<th)
   points(log10(xcounts)[sig],log10(ycounts)[sig],col="red",pch=".",cex=2)
-  abline(-log10(2),1,col="black",lty=2,lwd=2)
-  abline(log10(2),1,col="black",lty=2,lwd=2)
+  abline(-log10(fc),1,col="black",lty=2,lwd=2)
+  abline(log10(fc),1,col="black",lty=2,lwd=2)
 }
 
 panel.smoothScatter = function(x,y){
@@ -95,7 +95,7 @@ plotRep = function(dds){
   
 }
 
-resTable = function(res,dds,th=0.01){
+resTable = function(res,dds,th){
   resOrder = res[order(res$padj<th,abs(res$log2FoldChange),decreasing = T),]
   ncounts = counts(dds,normalized=T)
   groups= gsub(" ","",unlist(strsplit(strsplit(strsplit(res@elementMetadata[5,2],":")[[1]][2],c("type"))[[1]][2],"vs")))
@@ -110,12 +110,15 @@ resTable = function(res,dds,th=0.01){
 ############################
 args = commandArgs(trailingOnly=TRUE)
 
-if (length(args)==0){
-  stop("Provide tab filewith files to read")
-} else if (length(args)>1) {
-  print ("more than one input file, only first will be processed")
+if (length(args)<3){
+  stop("Provide tab file with files to read, p-value and fold change")
+} else if (length(args)>3) {
+  print ("too many args,  only 3 first will be processed")
 } else
   design=args[1]
+  th = args[2]
+  fc = args[3]
+
 setup=read.table(design,sep=",",comment.char="")
 
 print(setup[,2])
@@ -178,14 +181,14 @@ plotMA(res,main="ma plot")
 dev.off()
 
 pdf("master_peaks_deseq_fig6.pdf")
-plotScatter(dds,contrast = contr)
+plotScatter(dds,contrast = contr,th=th,fc=fc)
 dev.off()
   
 CairoPNG("master_peaks_deseq_fig6.png")
-plotScatter(dds,contrast = contr)
+plotScatter(dds,contrast = contr, th=th, fc=fc)
 dev.off()
 
-resOrder=resTable(res,dds)
+resOrder=resTable(res,dds,th=th)
 resOrder = cbind(resOrder,anno[rownames(resOrder),])
 write.table(resOrder,file="deseq_results.csv",sep=";",quote = FALSE)
 
