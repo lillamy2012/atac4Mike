@@ -18,14 +18,17 @@ params.deseq_p		= 0.01
 params.deseq_fc		= 2
 params.bw_binsize	= 10
 
+//int val = new BigDecimal(stringValue).intValue();
 /**********************
 * set genome size, txdb
 ***********************/
 
 if(params.genome == 'Athaliana'){
-	params.genomesize = '1.2e8'
+	params.genomesize = 1.2e8
 	params.txdb = "TxDb.Athaliana.BioMart.plantsmart28"
 }
+	int tonorm = new BigDecimal(params.genomesize).intValue()
+
 
 /*************************************************
 *************************************************/
@@ -186,7 +189,7 @@ publishDir "${params.output}/ds_bam", mode: 'copy'
    """
    export TMPDIR=\$(pwd)
    samtools index ${bam}
-   bamCoverage -b ${bam} -o ${type}.subset.bw --normalizeTo1x ${params.genomesize} --binSize=${params.bw_binsize}
+   bamCoverage -b ${bam} -o ${type}.subset.bw --normalizeTo1x ${tonorm} --binSize=${params.bw_binsize}
    """
 }
 
