@@ -4,6 +4,7 @@ library(Cairo)
 library(DESeq2)
 library("pheatmap")
 library("RColorBrewer")
+library("gsubfn")
 
 ## functions
 ############
@@ -111,6 +112,7 @@ resTable = function(res,dds,th){
 
 ############################
 args = commandArgs(trailingOnly=TRUE)
+print(args)
 
 if (length(args)<3){
   stop("Provide tab file with files to read, p-value and fold change")
@@ -121,7 +123,6 @@ if (length(args)<3){
   th = args[2]
   fc = as.numeric(args[3])
 
-print(fc)
 setup=read.table(design,sep=",",comment.char="")
 
 print(setup[,2])
@@ -132,6 +133,24 @@ print(f_names)
 annoF = "master_anno.csv"
 
 anno = read.table(annoF,sep=";",header=T,comment.char="#",quote = "") 
+
+n=0
+s=-1
+x=TRUE
+while(x==TRUE){
+print (x)
+  n = n+1
+  s = s+1
+   loi = scan(annoF,nlines=n,skip=s, what = character(),sep=";")
+   x = grepl("^#",loi)[1]
+print(x)
+ }
+
+print(s)	
+comment = read.table(annoF,nrow=s,sep=";",comment.char="")
+
+
+print(comment)
 print(head(anno))
 rownames(anno)=paste0("peak",1:nrow(anno))
 peaks = grep("narrowPeak",colnames(anno),value=T)
@@ -193,7 +212,8 @@ dev.off()
 
 resOrder=resTable(res,dds,th=th)
 resOrder = cbind(resOrder,anno[rownames(resOrder),])
-write.table(resOrder,file="deseq_results.csv",sep=";",quote = FALSE)
+write.table(comment,file="deseq_results.csv",sep=";",quote = FALSE,row.names=FALSE,col.names=FALSE)
+write.table(resOrder,file="deseq_results.csv",sep=";",quote = FALSE,append=TRUE)
 
 
 
