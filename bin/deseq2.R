@@ -54,6 +54,8 @@ runVisPlot=function(dds,prename){
 }
 
 plotScatter = function(dds,contrast,th,fc){
+  #print(log10(fc))
+print(class(fc))
   res = results(dds,contrast)
   ncounts = counts(dds,normalized=T)
   groups= colData(dds)[contrast[1]]
@@ -117,8 +119,9 @@ if (length(args)<3){
 } else
   design=args[1]
   th = args[2]
-  fc = args[3]
+  fc = as.numeric(args[3])
 
+print(fc)
 setup=read.table(design,sep=",",comment.char="")
 
 print(setup[,2])
@@ -128,7 +131,7 @@ f_names = setup[,1]
 print(f_names)
 annoF = "master_anno.csv"
 
-anno = read.table(annoF,sep=";",header=T,comment.char="",quote = "") 
+anno = read.table(annoF,sep=";",header=T,comment.char="#",quote = "") 
 print(head(anno))
 rownames(anno)=paste0("peak",1:nrow(anno))
 peaks = grep("narrowPeak",colnames(anno),value=T)
