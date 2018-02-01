@@ -78,7 +78,7 @@ tot_merge = mergeClosePeaks(tot,mergeLen)
 print(head(tot_merge))
 overlaps = createOverlapMat(peaks,tot_merge)
 
-cat(mergeL
+cat('#merge dist \n',file="master_anno.csv")
 
 ## annotate
 print("anno")
@@ -111,6 +111,6 @@ tot_df_anno = tot_df_anno[name_order,]
 
 write.table(df,sep="\t",file="master.gff",row.names = FALSE,col.names = FALSE,quote = FALSE)
 
-write.table(tot_df_anno, file ="master_anno.csv",row.names = FALSE,quote=FALSE,sep=";")
+write.table(tot_df_anno, file ="master_anno.csv",row.names = FALSE,quote=FALSE,sep=";",append=TRUE)
 
 
