@@ -63,7 +63,7 @@ createOverlapMat = function(peaks,tot){
 #########################
 
 files = grep("narrowPeak",dir(),value=TRUE)
-mergeLen = as.numeric(args[1])
+mergeLen = as.numeric(args[2])
 
 peaks=list()
 for (i in files){
@@ -77,6 +77,8 @@ tot = reduce(Reduce(c, peaks)) # combine all peaks called
 tot_merge = mergeClosePeaks(tot,mergeLen)
 print(head(tot_merge))
 overlaps = createOverlapMat(peaks,tot_merge)
+
+cat(mergeL
 
 ## annotate
 print("anno")

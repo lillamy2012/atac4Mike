@@ -11,7 +11,7 @@ params.bams		= "bam_1/*.bam"
 params.quality		= 10  
 params.output		= "results_1/"
 params.anno_distance	= 900
-params.txdb		= "TxDb.Athaliana.BioMart.plantsmart28" 
+// params.txdb		= "TxDb.Athaliana.BioMart.plantsmart28" 
 // "mm10ref_seq_txdb.sqlite" "TxDb.Mmusculus.UCSC.mm10.knownGene"
 params.peak_merge_dist	= 50
 params.deseq_p		= 0.01
@@ -19,7 +19,7 @@ params.deseq_fc		= 2
 params.bw_binsize	= 10
 
 /**********************
-* set genome size
+* set genome size, txdb
 ***********************/
 
 if(params.genome == 'Athaliana'){
