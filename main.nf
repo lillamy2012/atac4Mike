@@ -96,6 +96,29 @@ publishDir "${params.output}/bam", mode: 'copy'
     """
 }
 
+uniq_filtered.into { uniq_filtered ; bw_bam }
+
+// bw of individual bam files
+
+process bwIndBam {
+publishDir "${params.output}/ds_bam", mode: 'copy'
+tag: "name: $name"
+
+    input:
+    set name, file(bam) from bw_bam
+
+    output:
+    set name, file("${name}.bw")
+
+    script:
+    """
+    export TMPDIR=\$(pwd)
+    samtools index ${bam}
+    bamCoverage -b ${bam} -o ${name}.bw --normalizeTo1x ${tonorm} --binSize=${params.bw_binsize} 
+    """	
+
+
+
 // set up channel with design info for each bam - needed for merging of replicates
 
 comb = uniq_filtered.map { it -> [ id:it[0], file:it[1] ] }.phase(design) {it -> it.id}
