@@ -36,23 +36,24 @@ echo "part1"
 deseq="deseq_results.csv"
 
 ## handle comments 
-comments=$(grep '#' $deseq)
-data=$(grep -v '#' $deseq)
+grep '#' $deseq > comments
+grep -v '#' $deseq > data
 
 
 fpkm="master.gff_summary.tab"
 out="deseq_total_results.csv"
 
-join -j1 -t ";" <(awk 'FNR > 1 {print}' $data | sort -n --key=1.5 ) <(perl -wnlp -e 's/\s+/;/g;' $fpkm | awk 'FNR > 1 {print}' | sort -n --key=1.5) > merge_tmp
+join -j1 -t ";" <(awk 'FNR > 1 {print}' data | sort -n --key=1.5 ) <(perl -wnlp -e 's/\s+/;/g;' $fpkm | awk 'FNR > 1 {print}' | sort -n --key=1.5) > merge_tmp
 
 
 ## header
 
-    awk 'BEGIN {FS=","}; NR==1 {print}' $data > h1
+    awk 'BEGIN {FS=","}; NR==1 {print}' data > h1
     awk 'NR==1 {print}' $fpkm > h2
 
-    printf $(cat $comments) > $out
-    printf "Peak"\; > $$out
+    printf $(cat comments) > $out
+    printf "\n" >> $out
+    printf "Peak"\; >> $out
     printf $(cat h1) >> $out
     printf \; >> $out
     printf $(cat h2 | perl -wnlp -e 's/\s+/;/g;' |  cut -d';' -f 2-)>> $out
@@ -64,7 +65,7 @@ nn=$((nrC-3))
 echo $nn
     cut -d';' -f1-$nn out.tmp > $out
 
-    rm h1 h2 merge_tmp out.tmp
+    rm h1 h2 merge_tmp out.tmp data comments
 
 
 

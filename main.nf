@@ -359,3 +359,10 @@ publishDir "${params.output}/fpkm", mode: 'copy'
 
 }
 
+
+workflow.onComplete { 
+	println ( workflow.success ? "Done!" : "Oops .. something went wrong" )
+}
+
+
+
