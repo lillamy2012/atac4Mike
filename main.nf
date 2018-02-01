@@ -186,7 +186,7 @@ publishDir "${params.output}/ds_bam", mode: 'copy'
    """
    export TMPDIR=\$(pwd)
    samtools index ${bam}
-   bamCoverage -b ${bam} -o ${type}.subset.bw --normalizeTo1x ${params.genomesize} --binSize=${param.bw_binsize}
+   bamCoverage -b ${bam} -o ${type}.subset.bw --normalizeTo1x ${params.genomesize} --binSize=${params.bw_binsize}
    """
 }
 

@@ -6,6 +6,7 @@ library(AnnotationDbi)
 
 
 args = commandArgs(trailingOnly=TRUE)
+print(args)
 
 ### get which txdb to use:
 tx=args[2]
@@ -63,7 +64,11 @@ createOverlapMat = function(peaks,tot){
 #########################
 
 files = grep("narrowPeak",dir(),value=TRUE)
-mergeLen = as.numeric(args[2])
+mergeLen = as.numeric(args[3])
+
+print(files)
+print(mergeLen)
+bp_distance
 
 peaks=list()
 for (i in files){
