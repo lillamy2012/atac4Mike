@@ -9,7 +9,7 @@ library(UpSetR)
 library(gtools)
 
 w_col=wes_palette("Moonrise3",5)[c(1,5,3)]
-tot_merged=read.csv("master_anno.csv",sep = ";", stringsAsFactors=F)
+tot_merged=read.csv("master_anno.csv",sep = ";", stringsAsFactors=F,comment="#")
 psets = grep("narrowPeak",colnames(tot_merged))
 pdf("peakOV.fig1.pdf")
 upset(tot_merged,main.bar.color=w_col,sets.bar.color=w_col[1:2])
