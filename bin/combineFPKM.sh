@@ -5,7 +5,6 @@ gffs=( $(find . -name "*.gff") )
 
 for g in "${gffs[@]}"; do
     gf=$(basename $g)
-    #echo $g
     outfile=${gf}_summary.tab
     awk '{print $10"\t"$4"\t"$5}' $g | sed 's/"//g' | sed 's/;//g'> $outfile
     printf "%s\t" "peaks" > header_${gf}.tab    
@@ -31,7 +30,6 @@ for g in "${gffs[@]}"; do
      rm header_${gf}.tab 
 
 done
-echo "part1"
 
 deseq="deseq_results.csv"
 
@@ -47,25 +45,22 @@ join -j1 -t ";" <(awk 'FNR > 1 {print}' data | sort -n --key=1.5 ) <(perl -wnlp 
 
 
 ## header
+awk 'BEGIN {FS=","}; NR==1 {print}' data > h1
+awk 'NR==1 {print}' $fpkm > h2
 
-    awk 'BEGIN {FS=","}; NR==1 {print}' data > h1
-    awk 'NR==1 {print}' $fpkm > h2
-
-    printf $(cat comments) > $out
-    printf "\n" >> $out
-    printf "Peak"\; >> $out
-    printf $(cat h1) >> $out
-    printf \; >> $out
-    printf $(cat h2 | perl -wnlp -e 's/\s+/;/g;' |  cut -d';' -f 2-)>> $out
-    printf "\n" >> $out
-    cat merge_tmp >> $out
-    cp $out out.tmp
+cat comments > $out
+printf "Peak"\; >> $out
+printf $(cat h1) >> $out
+printf \; >> $out
+printf $(cat h2 | perl -wnlp -e 's/\s+/;/g;' |  cut -d';' -f 2-)>> $out
+printf "\n" >> $out
+cat merge_tmp >> $out
+cp $out out.tmp
 nrC=$(awk -F";" '{print NF}' out.tmp | sort -nu | tail -n 1)
 nn=$((nrC-3))
-echo $nn
-    cut -d';' -f1-$nn out.tmp > $out
+cut -d';' -f1-$nn out.tmp > $out
 
-    rm h1 h2 merge_tmp out.tmp data comments
+# rm h1 h2 merge_tmp out.tmp data comments
 
 
 

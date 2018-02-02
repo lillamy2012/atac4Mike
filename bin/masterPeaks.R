@@ -85,7 +85,7 @@ overlaps = createOverlapMat(peaks,tot_merge)
 
 cat(paste(paste('#merge dist', mergeLen), '\n'),file="master_anno.csv")
 cat(paste(paste('#anno dist', bp_distance), '\n'),file="master_anno.csv",append=TRUE)
-cat(paste(paste('#files', paste(files,collapse=","), '\n'),file="master_anno.csv",append=TRUE)
+cat(paste(paste('#files', paste(files,collapse=","), '\n')),file="master_anno.csv",append=TRUE)
 
 ## annotate
 print("anno")
