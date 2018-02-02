@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 
 // inparameters
-params.bams          = "/lustre/scratch/users/elin.axelsson/Mike-25-09-2017/demult/*.bam"
+params.in	     = "/lustre/scratch/users/elin.axelsson/Mike-25-09-2017/demult/*.bam"
 params.output        = "bam/"
 params.stats         = "align_logs/"
 params.min_length    = 5
@@ -9,21 +9,36 @@ params.overlap       = 1
 params.read_length   = 50
 params.A             = "CTGTCTCTTATACACATCTGACGCTGCCGACGA"
 params.a             = "CTGTCTCTTATACACATCTCCGAGCCCACGAGAC"
-
 params.index         = "/lustre/scratch/projects/berger_common/backup_berger_common/Bowtie2Index/genome"
 
-//TAIR10/Bowtie2Index/Arabidopsis_thaliana.TAIR10.31.dna_rm.genome"
 
-//params.index         = "/lustre/scratch/projects/berger_common/mm10/mm10_index_4Bowtie/mm10"
+log.info "ATAC-SEQ Align  N F  ~  version 0.1"
+log.info "====================================="
+log.info "====================================="
+log.info "in files		: ${params.in}"
+log.info "stats output	        : ${params.stats}"
+log.info "output		: ${params.output}"
+log.info "****************************************"
+log.info "read length		: ${params.read_length}"
+log.info "min output length     : ${params.min_length}"
+log.info "overlap 		: ${params.overlap}"
+log.info "adaptor A		: ${params.A}"
+log.info "adaptor a		: ${params.a}"
+log.info "****************************************"
+log.info "alignment index	: ${params.index}"
+log.info "****************************************"
 
 
 // index
 index=file(params.index)
 
-// start channel
+	// start channel
+
 bams = Channel 
-       .fromPath(params.bams)
+       .fromPath(params.in)
        .map { file -> tuple(file.baseName, file) }
+
+
 
 bams.into { bam_read1; bam_read2 }
 
